@@ -1,7 +1,7 @@
 const fs = require('fs');
 // Require the necessary discord.js classes
 const { Client, Collection, Intents } = require('discord.js');
-const token = process.env[config.hahatoken];
+const token = process.env.hahatoken;
 const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
 
