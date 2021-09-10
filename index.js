@@ -15,7 +15,6 @@ const port = process.env.PORT || 5000;
 
 const startRobot = function (token) {
 	// await register()
-	console.log(token);
 
 	const intents = new Intents([
 		Intents.FLAGS.GUILDS,
@@ -66,20 +65,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/getInvite', (req, res) => {
+	res.status(200)
 	res.render('index', {
 		title: '歡迎你，我是unityhahabot',
 		botInviteUrl: 'https://discord.com/api/oauth2/authorize?client_id=882966434878201857&permissions=8&scope=bot',
-		test
+		test: '測試字串'
 	});
 });
 
 app.get('/restartbot', async (req, res) => {
 	try {
-		await start()
-		res.render('successRes')
-	} catch (error) {
-		res.render('err')
-		res.status
+		await startRobot(token);
+		res.status(200)
+		res.render('successRes');
+	} catch (err) {
+		res.status(500);
+		res.render('err', {err})
 	}
 })
 
@@ -97,8 +98,10 @@ app.use(function (err, req, res, next) {
 	console.info('發發發發發生了錯誤!');
 	console.error(err);
 	// render the error page
-	res.status(err.status || 500);
-	res.render('err');
+	res.status(err.status || 500)
+	res.render('err', {
+		err
+	});
 });
 
 app.listen(port, () => {
