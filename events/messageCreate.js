@@ -111,9 +111,6 @@ module.exports = {
 
 				for (let i = 0; i < videoResultLength; i++) {
 					// inside a command, event listener, etc.
-					console.log(sortedVideos[i].url,
-						sortedVideos[i].views,
-						sortedVideos[i].timestamp)
 					const exampleEmbed = new MessageEmbed()
 						.setColor('#0099ff')
 						.setTitle(sortedVideos[i].title)

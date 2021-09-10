@@ -82,13 +82,16 @@ async function start () {
 	
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
+		console.log(event)
 		if (event.once) {
 			console.log(event.name)
 			client.once(event.name, (...args) => {
 				event.execute(...args)
 			});
 		} else if (event.name === 'interactionCreate') {
-			client.on(event.name, (interaction) => event.execute(interaction, client));
+			client.on(event.name, (interaction) => {
+				event.execute(interaction, client)
+			});
 		} else if (event.name === 'messageCreate') {
 			client.on(event.name, (message) => event.execute(client, message));
 		} else {
