@@ -15,9 +15,10 @@ module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message) {
-		console.log(message.author)
+		console.log(message)
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) return ''
+		if (message.type === 'REPLY') return ''
 		if (message.content[0] !== '$' && message.content[1] !== '$') return ''
 		if (!voiceChannel) return message.reply('請進入語音頻道，才能輸入指令! (指令以$$開頭)');
 
@@ -129,7 +130,7 @@ module.exports = {
 						.setTimestamp(sortedVideos[i].timestamp);
 					embeds.push(exampleEmbed)
 				}
-
+				console.log('不該連續出現');
 				message.reply({embeds});
 				break;
 			}

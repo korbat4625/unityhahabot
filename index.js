@@ -2,11 +2,13 @@ const fs = require('fs');
 const path = require('path')
 require('dotenv').config();
 // Require the necessary discord.js classes
-const { Client, Collection, Intents } = require('discord.js');
-const token = process.env.HAHA_TOKEN;
-const test = process.env.TEST;
+
 const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
+const { Client, Collection, Intents } = require('discord.js');
+
+const token = process.env.HAHA_TOKEN;
+const test = process.env.TEST;
 
 // express
 const {errHandling}  = require('./errHandling');
@@ -47,6 +49,7 @@ app.use(errHandling);
 
 app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
+	start();
 })
 
 async function start () {
@@ -85,11 +88,6 @@ async function start () {
 				event.execute(...args)
 			});
 		} else if (event.name === 'interactionCreate') {
-			// console.log('註冊聲音頻道更新')
-			// client.on('voiceStateUpdate', (oldState, newState) => {
-			// 	console.log(oldState.member.voice)
-			// 	console.log(newState.member.voice)
-			// })
 			client.on(event.name, (interaction) => event.execute(interaction, client));
 		} else if (event.name === 'messageCreate') {
 			client.on(event.name, (message) => event.execute(client, message));
