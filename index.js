@@ -1,10 +1,52 @@
 const fs = require('fs');
+const path = require('path')
 require('dotenv').config();
 // Require the necessary discord.js classes
 const { Client, Collection, Intents } = require('discord.js');
 const token = process.env.HAHA_TOKEN;
+const test = process.env.TEST;
 const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
+
+// express
+const {errHandling}  = require('./errHandling');
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+console.log(path.join(__dirname, 'views'));
+
+app.get('/', (req, res) => {
+	console.log(req);
+	res.render('index', {
+		title: '歡迎你，我是unityhahabot',
+		botInviteUrl: 'https://discord.com/api/oauth2/authorize?client_id=882966434878201857&permissions=8&scope=bot',
+		test
+	});
+});
+
+app.get('/restartbot', async (req, res) => {
+	try {
+		await start()
+		res.render('successRes')
+	} catch (error) {
+		res.render('err')
+	}
+})
+
+app.get('*', function(req, res){
+	res.render('404')
+});
+
+// err handling
+app.use(errHandling);
+
+app.listen(port, () => {
+	console.log(`Example app listening at http://localhost:${port}`)
+})
+
 async function start () {
 	await register()
 
@@ -82,9 +124,5 @@ async function start () {
 
 	// Login to Discord with your client's token
 	client.login(token);
-	setInterval(() => {
-		start()
-	}, 240000)
+	return ''
 }
-
-start();
