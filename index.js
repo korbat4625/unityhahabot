@@ -50,7 +50,7 @@ app.listen(port, () => {
 })
 
 async function start () {
-	await register()
+	// await register()
 
 	const intents = new Intents([
 		Intents.FLAGS.GUILDS,
@@ -61,25 +61,24 @@ async function start () {
 	
 	// Create a new client instance
 	const client = new Client({ intents, partials: ['CHANNEL'] });
-	client.commands = new Collection();
+	// client.commands = new Collection();
 
-	const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+	// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 	const player = new Player(client, {
 		leaveOnEmpty: false, // This options are optional.
 	});
 	client.player = player;
 	
-	for (const file of commandFiles) {
-		const command = require(`./commands/${file}`);
-		// Set a new item in the Collection
-		// With the key as the command name and the value as the exported module
-		client.commands.set(command.data.name, command);
-	}
+	// for (const file of commandFiles) {
+	// 	const command = require(`./commands/${file}`);
+	// 	// Set a new item in the Collection
+	// 	// With the key as the command name and the value as the exported module
+	// 	client.commands.set(command.data.name, command);
+	// }
 	
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
-		console.log('eventName:::', event)
 		if (event.once) {
 			console.log(event.name)
 			client.once(event.name, (...args) => {

@@ -15,7 +15,7 @@ module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message) {
-
+		console.log(message.author)
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) return ''
 		if (message.content[0] !== '$' && message.content[1] !== '$') return ''
@@ -91,6 +91,7 @@ module.exports = {
 				break;
 			}
 			case 'search': {
+				console.log('進行搜尋')
 				const videoResultLength = 5;
 				let videoResult = null
 				let keyWords = ''
