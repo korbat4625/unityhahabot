@@ -16,9 +16,11 @@ const port = 3000;
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-console.log(path.join(__dirname, 'views'));
 
-app.get('/', (req, res) => {
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: false }));
+
+app.get('/getInvite', (req, res) => {
 	console.log(req);
 	res.render('index', {
 		title: '歡迎你，我是unityhahabot',
