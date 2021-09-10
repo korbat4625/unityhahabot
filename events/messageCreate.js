@@ -15,9 +15,12 @@ module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message) {
-		console.log(message)
+		console.info('message:::', message, '\n')
 		const voiceChannel = message.member.voice.channel
-		if (message.author.bot) return ''
+		if (message.author.bot) {
+			console.warn('這是機器人說話!!!');
+			return ''
+		}
 		if (message.type === 'REPLY') return ''
 		if (message.content[0] !== '$' && message.content[1] !== '$') return ''
 		if (!voiceChannel) return message.reply('請進入語音頻道，才能輸入指令! (指令以$$開頭)');
@@ -27,8 +30,8 @@ module.exports = {
 		if (!permissions.has('SPEAK')) return message.channel.send('你沒有權限執行此指令');
 		
 		
-		const videoFinder = async (q) => {
-			return await ytSearch(q);
+		const videoFinder = async (keywords) => {
+			return await ytSearch(keywords);
 		}
 
 		const showCommand = (command) => {
@@ -50,20 +53,30 @@ module.exports = {
 		const prefix = '$$'
 		const args = message.content.slice(prefix.length).trim().split(/ +/g);
 		const command = args.shift();
+		let guildQueue = client.player.getQueue(message.guild.id);
+
 		const defaultVol = 80;
 		const secretTime = 10;
-		let guildQueue = client.player.getQueue(message.guild.id);
+
+		console.info('guildQueue:', guildQueue);
+		console.info('guildQueue:', guildQueue);
+		console.info('guildQueue:', guildQueue, '\n');
 		
-		// console.log('command:', command)
-		console.log('args:', args)
+		console.info('command:', command);
+		console.info('command:', command);
+		console.info('args:', args);
+		console.info('args:', args, '\n');
+
 		switch (command) {
+			case 'getGuildQueue': {
+				console.info('guildQueue:', guildQueue);
+				break;
+			}
 			case 'play': {
 				let queue = client.player.createQueue(message.guild.id);
 				await queue.join(message.member.voice.channel);
-				client.player.getQueue(message.guild.id).setVolume(defaultVol);
 				let song = await queue.play(args.join(' ')).catch(_ => {
-					if(!guildQueue)
-					queue.stop();
+					if(!guildQueue) queue.stop();
 				});
 				break;
 			}
@@ -92,7 +105,10 @@ module.exports = {
 				break;
 			}
 			case 'search': {
-				console.log('進行搜尋')
+				console.info('進行搜尋');
+				console.info('進行搜尋');
+				console.info('進行搜尋');
+
 				const videoResultLength = 5;
 				let videoResult = null
 				let keyWords = ''
