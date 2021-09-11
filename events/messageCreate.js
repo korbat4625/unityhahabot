@@ -1,6 +1,7 @@
 const ytSearch = require('yt-search');
 const ytdl = require('ytdl-core');
 const { MessageEmbed } = require('discord.js');
+const register = require('../deploy-command');
 
 module.exports = {
 	name: 'messageCreate',
@@ -10,7 +11,11 @@ module.exports = {
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
 			console.warn('這是機器人說話!!!');
-			if (message.type === 'GUILD_MEMBER_JOIN') {}
+			if (message.type === 'GUILD_MEMBER_JOIN') {
+				const clientId = message.author.id
+				const guildId = message.guildId
+				await register(clientId, guildId, client);
+			}
 			return ''
 		}
 		if (message.type === 'REPLY') return ''
