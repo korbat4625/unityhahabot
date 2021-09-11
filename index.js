@@ -67,8 +67,8 @@ const startRobot = function (token) {
 			}
 		}
 	}
-	console.info('event name:::', eventsName)
-	console.log('client._events::', client._events)
+	console.info('event name:::', eventsNameArr)
+	console.info('client._events::', client._events)
 
 	// Login to Discord with your client's token
 	client.login(token);
