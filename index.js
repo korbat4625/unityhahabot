@@ -73,7 +73,7 @@ const startRobot = async function (restart) {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.once(event.name, (...args) => {
 					event.execute(...args, (needToRegisteredInfo) => {
-						console.log(needToRegisteredInfo)
+						// console.log(needToRegisteredInfo)
 						guildsId = needToRegisteredInfo.guildsId
 						client.guildsId = guildsId;
 						bigClient = client;
@@ -103,7 +103,7 @@ const startRobot = async function (restart) {
 			}
 		} else {
 			if (!isEventExist(eventsNameArr, event.name)) {
-				console.log('註冊了', event.name)
+				// console.log('註冊了', event.name)
 				client.on(event.name, (...args) => event.execute(...args));
 				eventsNameArr.push(event.name)
 			}

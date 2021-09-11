@@ -33,22 +33,6 @@ module.exports = {
 			return await ytSearch(keywords);
 		}
 
-		const showCommand = (command) => {
-			const wrong = command === '?' ? '' : '請輸入正確的指令...\n'
-			const text =
-				wrong +
-				'$$? => 看指令\n' +
-				'$$play Youtube網址 => 撥放YT音樂\n' +
-				'$$playlist Youtube網址 => 撥放YT音樂清單\n' +
-				'$$stop => 結束撥放\n' +
-				'$$pause => 暫停撥放\n' +
-				'$$resume => 恢復撥放\n' +
-				'$$setVolume 0~100 => 設置撥放中音量\n' + 
-				'$$search 關鍵字 => 搜尋YT關鍵字前5名撥放量，可自行用於複製URL並使用$$play撥放\n' +
-				'$$secret => 不建議嘗試';
-			return message.reply({ content: text, ephemeral: true });
-		}
-
 		const prefix = '$$'
 		const args = message.content.slice(prefix.length).trim().split(/ +/g);
 		const command = args.shift();
@@ -56,20 +40,17 @@ module.exports = {
 
 		const secretTime = 10;
 
-		console.info('guildQueue:', guildQueue);
+
 		console.info('guildQueue:', guildQueue);
 		console.info('guildQueue:', guildQueue, '\n');
 		
 		console.info('command:', command);
 		console.info('command:', command);
+
 		console.info('args:', args);
 		console.info('args:', args, '\n');
 
 		switch (command) {
-			case 'getGuildQueue': {
-				console.info('guildQueue:', guildQueue);
-				break;
-			}
 			case 'play': {
 				let queue = client.player.createQueue(message.guild.id);
 				await queue.join(message.member.voice.channel);
@@ -91,7 +72,7 @@ module.exports = {
 				break;
 			}
 			case 'stop': {
-				console.log(guildQueue)
+				// console.log(guildQueue)
 				if (guildQueue !== undefined) guildQueue.stop();
 				break;
 			}

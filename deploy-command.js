@@ -23,7 +23,6 @@ module.exports = async function (client, single = false) {
 		const command = require(`./commands/${file}`);
 		commands.push(command.data.toJSON());
 	}
-	console.log(commands)
 
 	const rest = new REST({ version: '9' }).setToken(client.token);
 

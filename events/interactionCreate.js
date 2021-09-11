@@ -4,16 +4,12 @@ module.exports = {
 	async execute(interaction, client) {
 		console.log(`${interaction.user.tag} in #${interaction.channel.name} triggered an interaction.`);
 		if (!interaction.isCommand()) return;
-		console.log('互動產生:: \n', interaction)
-		console.log(interaction.commandName)
+		// console.log('互動產生:: \n', interaction)
 
 		const command = client.commands.get(interaction.commandName);
 		if (!command) return;
 		
 		console.log(`${interaction.user.tag} in #${interaction.channel.name} triggered an interaction.`);
-
-		console.log('commandcommandcommand \n', command)
-		console.log('interactioninteraction \n', interaction)
 
 		try {
 			await command.execute(interaction);
