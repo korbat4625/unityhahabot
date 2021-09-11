@@ -10,15 +10,6 @@ module.exports = {
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
 			console.warn('這是機器人觸發訊息!!!');
-			// if (message.type === 'GUILD_MEMBER_JOIN') {
-			// 	console.warn('這是機器人加入了!!!');
-			// 	console.log('新guildId::', message.guildId)
-			// 	console.log('新guildId::', message.guildId)
-			// 	console.log('新guildId::', message.guildId)
-			// 	callback({
-			// 		newGuildIdToRegister: message.guildId
-			// 	})
-			// }
 			return ''
 		}
 		if (message.type === 'REPLY') return ''
@@ -57,12 +48,16 @@ module.exports = {
 				console.log(args.join(' '))
 				let song = await queue.play(args.join(' ')).catch(_ => {
 					console.error('error:', _)
-					if(!guildQueue) queue.stop();
-					console.log('結束了撥放')
-					console.log('結束了撥放')
-					console.log('結束了撥放')
+					if(!guildQueue)  {
+						queue.stop();
+						console.log('結束了撥放')
+						console.log('結束了撥放')
+						console.log('結束了撥放')
+					}
+					client.startRobot()
 					throw _
 				});
+
 				break;
 			}
 			case 'playlist': {

@@ -63,19 +63,10 @@ const startRobot = async function (restart) {
 		volume: 80
 	});
 
-	const playErrHandler = function (err, queue) {
-		console.log('------------------')
-		console.log('err:', err)
-		// if (queue?.guild?.systemChannelId) console.log(queue?.guild?.systemChannelId)
-		// else console.log(queue)
-		console.log('------------------')
-		console.log('\n\n')
-	}
+
 	client.player = player;
 	client.player.on('error', (err, queue) => {
 		if (typeof(err) !== 'object') {
-			// console.log('錯誤發生了', err)
-			// console.log('queuequeue', queue)
 			let targetCh;
 			let buffer = [];
 			const guildId = queue.guild.id;
@@ -108,7 +99,6 @@ const startRobot = async function (restart) {
 			}
 		}
 	})
-
 	
 	client.token = token;
 	client.clientId = clientId
@@ -191,8 +181,8 @@ app.get('/getInvite', (req, res) => {
 
 app.get('/restartbot', async (req, res) => {
 	try {
-		bigClient.login(token)
-		res.status(200)
+		startRobot();
+		res.status(200);
 		res.render('successRes');
 	} catch (err) {
 		res.status(500);
