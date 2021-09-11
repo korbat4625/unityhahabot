@@ -14,10 +14,10 @@ module.exports = {
 				'$$setVolume 0~100 => 設置撥放中音量\n' + 
 				'$$search 關鍵字 => 搜尋YT關鍵字前5名撥放量，可自行用於複製URL並使用$$play撥放\n' +
 				'$$secret => 不建議嘗試\n' + 
-				'說明書網頁版製作中...!!!!!';
+				'說明書網頁版製作中...!@@@@@@@@@!';
 			return text;
 		}
 
-		return await interaction.reply('asfdasfd');
+		await interaction.reply({ content: showCommand(), ephemeral: true });
 	},
 };

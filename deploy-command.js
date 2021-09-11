@@ -26,23 +26,25 @@ module.exports = async function (client, single = false) {
 	console.log(commands)
 
 	const rest = new REST({ version: '9' }).setToken(client.token);
-	
-	try {
-		if (single) {
-			await rest.put(
-				Routes.applicationGuildCommands(client.clientId, client.currentNewGuildId),
-				{ body: commands },
-			);
-			console.log(client.currentNewGuildId + '註冊完成')
-			return ''
-		} else {
-			for (let guildId of client.guildsId) {
-				console.log('送' + guildId + '進去')
-				await regis(guildId);
+
+	return (async () => {
+		try {
+			if (single) {
+				await rest.put(
+					Routes.applicationGuildCommands(client.clientId, client.currentNewGuildId),
+					{ body: commands },
+				);
+				console.log(client.currentNewGuildId + '註冊完成')
+				return ''
+			} else {
+				for (let guildId of client.guildsId) {
+					console.log('送' + guildId + '進去')
+					await regis(guildId);
+				}
+				return ''
 			}
-			return ''
+		} catch (error) {
+			console.error(error);
 		}
-	} catch (error) {
-		console.error(error);
-	}
+	})();
 }
