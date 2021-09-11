@@ -29,11 +29,7 @@ module.exports = async function (client, single = false) {
 	return (async () => {
 		try {
 			if (single) {
-				await rest.put(
-					Routes.applicationGuildCommands(client.clientId, client.currentNewGuildId),
-					{ body: commands },
-				);
-				console.log(client.currentNewGuildId + '註冊完成')
+				await regis(client.currentNewGuildId);
 				return ''
 			} else {
 				for (let guildId of client.guildsId) {

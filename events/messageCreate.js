@@ -9,15 +9,16 @@ module.exports = {
 		// console.info('message:::', message, '\n')
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
-			console.warn('這是機器人說話!!!');
-			if (message.type === 'GUILD_MEMBER_JOIN') {
-				console.log('message info')
-				console.log('message info')
-				console.log('message info')
-				callback({
-					newGuildIdToRegister: message.guildId
-				})
-			}
+			console.warn('這是機器人觸發訊息!!!');
+			// if (message.type === 'GUILD_MEMBER_JOIN') {
+			// 	console.warn('這是機器人加入了!!!');
+			// 	console.log('新guildId::', message.guildId)
+			// 	console.log('新guildId::', message.guildId)
+			// 	console.log('新guildId::', message.guildId)
+			// 	callback({
+			// 		newGuildIdToRegister: message.guildId
+			// 	})
+			// }
 			return ''
 		}
 		if (message.type === 'REPLY') return ''

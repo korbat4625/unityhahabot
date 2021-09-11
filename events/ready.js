@@ -10,6 +10,11 @@ module.exports = {
 			const guildId = client.guilds.cache.get(attr[0]).id
 			guildsId.push(guildId);
 		}
+		console.log('登入後的ID們')
+		console.log({
+			clientId,
+			guildsId
+		})
 		callback({
 			clientId,
 			guildsId

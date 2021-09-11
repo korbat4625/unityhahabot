@@ -7,11 +7,10 @@ const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
 const { Client, Collection, Intents } = require('discord.js');
 
-bigClient = null;
+let bigClient = null;
 const token = process.env.HAHA_TOKEN;
 const clientId = process.env.CLIENT_ID;
 let guildsId = []
-let currentNewGuildId = null;
 const eventsNameArr = [];
 
 // express
@@ -24,7 +23,7 @@ const startRobot = async function (restart) {
 		// console.log('restartrestart')
 		// console.log(bigClient.guildsId)
 		// console.log(bigClient.clientId)
-		await register(bigClient, false);
+		// await register(bigClient, false);
 		console.log('處理完畢重啟')
 		startRobot(false);
 		return ''
@@ -41,6 +40,8 @@ const startRobot = async function (restart) {
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.DIRECT_MESSAGES,
 		Intents.FLAGS.GUILD_VOICE_STATES
+		// Intents.FLAGS.GUILD_MEMBERS,
+		// Intents.FLAGS.GUILD_PRESENCES
 	]);
 	
 	// Create a new client instance
@@ -72,13 +73,38 @@ const startRobot = async function (restart) {
 	}
 	player.on('error', (err, queue) => {
 		if (typeof(err) !== 'object') {
-			console.log('錯誤發生了', err)
+			// console.log('錯誤發生了', err)
+			// console.log('queuequeue', queue)
+			let targetCh;
+			let buffer = [];
+			const guildId = queue.guild.id;
+			const channels = client.channels.cache;
+			// console.log(channels)
 			const code = err.split(' ')[2]
-			const channelId = queue.guild.systemChannelId;
-			console.log(code)
+			const channelName = queue.connection.channel.name
+			// console.log(channelName)
+			const channelsPair = [...channels].filter(([id, ch]) => {
+				return ch.name === channelName && ch.guildId === guildId
+			})
+			// console.log(channelsPair)
+			// for (item of channelsPair) {
+			// 	targetCh = item.filter(item => {
+			// 		return item?.type === 'GUILD_TEXT' && item.name === channelName
+			// 	})[0]
+			// }
+			for (items of channelsPair) {
+				for (item of items) {
+					buffer.push(item)
+				}
+			}
+			targetCh = buffer.filter(item => {
+				return item?.type === 'GUILD_TEXT' && item.name === channelName
+			})[0]
+			console.log(targetCh)
 			switch (code) {
 				case '410':
-					client.channels.cache.get(channelId).send('Youtube可能不讓我撥放，不能怪我...換換別首歌吧...');
+					targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
+					player.deleteQueue(queue.guild.id)
 					break;
 				default:
 					console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
@@ -118,13 +144,7 @@ const startRobot = async function (restart) {
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (message) => {
-					event.execute(client, message, ({ newGuildIdToRegister }) => {
-						if (!guildsId.includes(currentNewGuildId)) guildsId.push(currentNewGuildId);
-						currentNewGuildId = newGuildIdToRegister;
-						client.currentNewGuildId = currentNewGuildId;
-						bigClient = client;
-						register(client, true)
-					})
+					event.execute(client, message);
 				});
 				eventsNameArr.push(event.name)
 			}
@@ -137,8 +157,24 @@ const startRobot = async function (restart) {
 		}
 	}
 
+	client.on('guildCreate', (guild) => {
+		client.currentNewGuildId = guild.id
+		if (guild.client.user.bot) {
+			console.log('新加入的是一個機器人')
+			if (!guildsId.includes(guild.id)) {
+				guildsId.push(guild.id);
+				console.log('有推guildsId:', guildsId);
+			}
+			client.guildsId = guildsId;
+			bigClient = client;
+			console.log('執行註冊');
+			register(client, true);
+		}
+	})
+
 	// Login to Discord with your client's token
-	client.login(token);
+	await client.login(token);
+	// console.log(client.guilds.cache)
 }
 
 
@@ -159,7 +195,7 @@ app.get('/getInvite', (req, res) => {
 
 app.get('/restartbot', async (req, res) => {
 	try {
-		await startRobot(true);
+		bigClient.login(token)
 		res.status(200)
 		res.render('successRes');
 	} catch (err) {
@@ -168,8 +204,15 @@ app.get('/restartbot', async (req, res) => {
 	}
 })
 
-app.get('/registerSlashCmd', async (req, res) => {
-	register();
+app.get('/deployCmd', async (req, res) => {
+	try {
+		register(bigClient, false);
+		res.status(200)
+		res.render('successRes');
+	} catch (err) {
+		res.status(500);
+		res.render('err', {err});
+	}
 })
 
 app.get('*', function(req, res) {
