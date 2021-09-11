@@ -42,25 +42,29 @@ const startRobot = function (token) {
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
-			if (checkEventExist(eventsNameArr, event.name)) return ''
-			client.once(event.name, (...args) => {
-				event.execute(...args);
-			});
-			eventsNameArr.push(event.name)
+			if (!checkEventExist(eventsNameArr, event.name)) {
+				client.once(event.name, (...args) => {
+					event.execute(...args);
+				});
+				eventsNameArr.push(event.name)
+			}
 		} else if (event.name === 'interactionCreate') {
-			if (checkEventExist(eventsNameArr, event.name)) return ''
-			client.on(event.name, (interaction) => {
-				event.execute(interaction, client);
-			});
-			eventsNameArr.push(event.name)
+			if (checkEventExist(eventsNameArr, event.name)) {
+				client.on(event.name, (interaction) => {
+					event.execute(interaction, client);
+				});
+				eventsNameArr.push(event.name)
+			}
 		} else if (event.name === 'messageCreate') {
-			if (checkEventExist(eventsNameArr, event.name)) return ''
-			client.on(event.name, (message) => event.execute(client, message));
-			eventsNameArr.push(event.name)
+			if (checkEventExist(eventsNameArr, event.name)) {
+				client.on(event.name, (message) => event.execute(client, message));
+				eventsNameArr.push(event.name)
+			}
 		} else {
-			if (checkEventExist(eventsNameArr, event.name)) return ''
-			client.on(event.name, (...args) => event.execute(...args));
-			eventsNameArr.push(event.name)
+			if (checkEventExist(eventsNameArr, event.name)) {
+				client.on(event.name, (...args) => event.execute(...args));
+				eventsNameArr.push(event.name)
+			}
 		}
 	}
 	console.info('event name:::', eventsName)
