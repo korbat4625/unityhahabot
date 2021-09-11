@@ -29,6 +29,7 @@ const startRobot = async function (restart) {
 		startRobot(false);
 		return ''
 	}
+	console.log('開始start流程')
 	// await register();
 	const isEventExist = (eventsArray = [], eventName) => {
 		if (eventsArray.includes(eventName)) return true;
