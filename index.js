@@ -3,9 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Require the necessary discord.js classes
-const register = require('./deploy-command');
+
 const { Player } = require("discord-music-player");
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Intents } = require('discord.js');
 const token = process.env.HAHA_TOKEN;
 const eventsNameArr = [];
 
@@ -14,8 +14,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
-const startRobot = function (token) {
-	// await register()
+const startRobot = async function (token) {
 	const isEventExist = (eventsArray = [], eventName) => {
 		if (eventsArray.includes(eventName)) return true;
 		return false;
@@ -25,14 +24,23 @@ const startRobot = function (token) {
 		Intents.FLAGS.GUILDS,
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.DIRECT_MESSAGES,
-		Intents.FLAGS.GUILD_VOICE_STATES
+		Intents.FLAGS.GUILD_VOICE_STATES,
+		Intents.FLAGS.GUILD_MEMBERS,
+		Intents.FLAGS.GUILD_PRESENCES
 	]);
 	
 	// Create a new client instance
 	const client = new Client({ intents, partials: ['CHANNEL'] });
 	// client.commands = new Collection();
-
 	// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+	// for (const file of commandFiles) {
+	// 	const command = require(`./commands/${file}`);
+	// 	// Set a new item in the Collection
+	// 	// With the key as the command name and the value as the exported module
+	// 	client.commands.set(command.data.name, command);
+	// }
+
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 	const player = new Player(client, {
 		leaveOnEmpty: false, // This options are optional.
@@ -40,6 +48,7 @@ const startRobot = function (token) {
 	});
 
 	client.player = player;
+	client.token = token;
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
@@ -63,11 +72,16 @@ const startRobot = function (token) {
 			}
 		} else {
 			if (!isEventExist(eventsNameArr, event.name)) {
+				console.log('註冊了', event.name)
 				client.on(event.name, (...args) => event.execute(...args));
 				eventsNameArr.push(event.name)
 			}
 		}
 	}
+	client.on('guildMemberAdd', (guildMemberAdd) => {
+		//Your code
+		console.log('guildMemberAdd:::', guildMemberAdd)
+	});
 	console.info('event name:::', eventsNameArr)
 	console.info('client._events::', client._events)
 

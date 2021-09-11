@@ -9,7 +9,7 @@ const {
 const ytSearch = require('yt-search');
 const ytdl = require('ytdl-core');
 const { MessageEmbed } = require('discord.js');
-
+const register = require('../deploy-command');
 
 module.exports = {
 	name: 'messageCreate',
@@ -19,6 +19,11 @@ module.exports = {
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
 			console.warn('這是機器人說話!!!');
+			if (message.type === 'GUILD_MEMBER_JOIN') {
+				const clientId = message.author.id
+				const guildId = message.guildId
+				await register(clientId, guildId, client);
+			}
 			return ''
 		}
 		if (message.type === 'REPLY') return ''
@@ -76,6 +81,9 @@ module.exports = {
 				await queue.join(message.member.voice.channel);
 				let song = await queue.play(args.join(' ')).catch(_ => {
 					if(!guildQueue) queue.stop();
+					console.log('結束了撥放')
+					console.log('結束了撥放')
+					console.log('結束了撥放')
 				});
 				break;
 			}
@@ -151,11 +159,8 @@ module.exports = {
 				}
 				return;
 			}
-			case '?': {
-				return showCommand(command);
-			}
 			default:
-				return showCommand(command);
+				return message.reply('指令有誤，請使用 /checkcmd 查看指令。')
 		}
 		return ''
 		// 解析$$order
