@@ -6,7 +6,7 @@ const path = require('path');
 const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
 const { Client, Collection, Intents } = require('discord.js');
-const token = process.env.HAHA_TOKEN;
+const token = process.env.HAHA_TOKEN_STAGING;
 const eventsNameArr = [];
 
 // express
