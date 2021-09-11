@@ -15,9 +15,9 @@ const port = process.env.PORT || 5000;
 
 const startRobot = function (token) {
 	// await register()
-	const checkEventExist = (eventsArray = [], eventName) => {
-		if (eventsArray.includes(eventName)) return false;
-		return true;
+	const isEventExist = (eventsArray = [], eventName) => {
+		if (eventsArray.includes(eventName)) return true;
+		return false;
 	}
 	const eventsNameArr = [];
 	const intents = new Intents([
@@ -42,26 +42,26 @@ const startRobot = function (token) {
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
-			if (!checkEventExist(eventsNameArr, event.name)) {
+			if (!isEventExist(eventsNameArr, event.name)) {
 				client.once(event.name, (...args) => {
 					event.execute(...args);
 				});
 				eventsNameArr.push(event.name)
 			}
 		} else if (event.name === 'interactionCreate') {
-			if (checkEventExist(eventsNameArr, event.name)) {
+			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (interaction) => {
 					event.execute(interaction, client);
 				});
 				eventsNameArr.push(event.name)
 			}
 		} else if (event.name === 'messageCreate') {
-			if (checkEventExist(eventsNameArr, event.name)) {
+			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (message) => event.execute(client, message));
 				eventsNameArr.push(event.name)
 			}
 		} else {
-			if (checkEventExist(eventsNameArr, event.name)) {
+			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (...args) => event.execute(...args));
 				eventsNameArr.push(event.name)
 			}
