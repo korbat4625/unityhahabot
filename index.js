@@ -1,6 +1,6 @@
 require('dotenv').config();
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
 
 // Require the necessary discord.js classes
 const register = require('./deploy-command');
@@ -15,7 +15,11 @@ const port = process.env.PORT || 5000;
 
 const startRobot = function (token) {
 	// await register()
-
+	const checkEventExist = (eventsArray = [], eventName) => {
+		if (eventsArray.includes(eventName)) return false;
+		return true;
+	}
+	const eventsNameArr = [];
 	const intents = new Intents([
 		Intents.FLAGS.GUILDS,
 		Intents.FLAGS.GUILD_MESSAGES,
@@ -38,20 +42,29 @@ const startRobot = function (token) {
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
+			if (checkEventExist(eventsNameArr, event.name)) return ''
 			client.once(event.name, (...args) => {
-				event.execute(...args)
+				event.execute(...args);
 			});
+			eventsNameArr.push(event.name)
 		} else if (event.name === 'interactionCreate') {
+			if (checkEventExist(eventsNameArr, event.name)) return ''
 			client.on(event.name, (interaction) => {
-				event.execute(interaction, client)
+				event.execute(interaction, client);
 			});
+			eventsNameArr.push(event.name)
 		} else if (event.name === 'messageCreate') {
+			if (checkEventExist(eventsNameArr, event.name)) return ''
 			client.on(event.name, (message) => event.execute(client, message));
+			eventsNameArr.push(event.name)
 		} else {
-			console.log(event.name)
+			if (checkEventExist(eventsNameArr, event.name)) return ''
 			client.on(event.name, (...args) => event.execute(...args));
+			eventsNameArr.push(event.name)
 		}
 	}
+	console.info('event name:::', eventsName)
+	console.log('client._events::', client._events)
 
 	// Login to Discord with your client's token
 	client.login(token);
@@ -65,7 +78,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/getInvite', (req, res) => {
-	res.status(200)
+	res.status(200);
 	res.render('index', {
 		title: '歡迎你，我是unityhahabot',
 		botInviteUrl: 'https://discord.com/api/oauth2/authorize?client_id=882966434878201857&permissions=8&scope=bot',
@@ -80,11 +93,11 @@ app.get('/restartbot', async (req, res) => {
 		res.render('successRes');
 	} catch (err) {
 		res.status(500);
-		res.render('err', {err})
+		res.render('err', {err});
 	}
 })
 
-app.get('*', function(req, res){
+app.get('*', function(req, res) {
 	res.render('404')
 });
 
