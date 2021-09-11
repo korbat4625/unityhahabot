@@ -71,7 +71,8 @@ const startRobot = async function (restart) {
 		console.log('------------------')
 		console.log('\n\n')
 	}
-	player.on('error', (err, queue) => {
+	client.player = player;
+	client.player.on('error', (err, queue) => {
 		if (typeof(err) !== 'object') {
 			// console.log('錯誤發生了', err)
 			// console.log('queuequeue', queue)
@@ -86,12 +87,6 @@ const startRobot = async function (restart) {
 			const channelsPair = [...channels].filter(([id, ch]) => {
 				return ch.name === channelName && ch.guildId === guildId
 			})
-			// console.log(channelsPair)
-			// for (item of channelsPair) {
-			// 	targetCh = item.filter(item => {
-			// 		return item?.type === 'GUILD_TEXT' && item.name === channelName
-			// 	})[0]
-			// }
 			for (items of channelsPair) {
 				for (item of items) {
 					buffer.push(item)
@@ -104,16 +99,17 @@ const startRobot = async function (restart) {
 			switch (code) {
 				case '410':
 					targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
-					player.deleteQueue(queue.guild.id)
+					client.player.deleteQueue(queue.guild.id)
 					break;
 				default:
 					console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
+					targetCh.send('我也不知道...抱歉...反正撥不了，換換別首歌吧...');
 					break;
 			}
 		}
 	})
 
-	client.player = player;
+	
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;
