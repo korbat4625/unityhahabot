@@ -86,7 +86,7 @@ app.get('/getInvite', (req, res) => {
 	res.status(200);
 	res.render('index', {
 		title: '歡迎你，我是unityhahabot',
-		botInviteUrl: 'https://discord.com/api/oauth2/authorize?client_id=882966434878201857&permissions=8&scope=bot',
+		botInviteUrl: process.env.HAHA_INVITE_URL,
 		test: '測試字串'
 	});
 });
