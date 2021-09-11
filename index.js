@@ -7,6 +7,7 @@ const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
 const { Client, Collection, Intents } = require('discord.js');
 const token = process.env.HAHA_TOKEN;
+const eventsNameArr = [];
 
 // express
 const express = require('express');
@@ -19,7 +20,7 @@ const startRobot = function (token) {
 		if (eventsArray.includes(eventName)) return true;
 		return false;
 	}
-	const eventsNameArr = [];
+	
 	const intents = new Intents([
 		Intents.FLAGS.GUILDS,
 		Intents.FLAGS.GUILD_MESSAGES,
