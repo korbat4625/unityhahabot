@@ -1,12 +1,17 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-
+const register = require('./deploy-command');
 // Require the necessary discord.js classes
 
 const { Player } = require("discord-music-player");
-const { Client, Intents } = require('discord.js');
+const { Client, Collection, Intents } = require('discord.js');
+
+bigClient = null;
 const token = process.env.HAHA_TOKEN;
+const clientId = process.env.CLIENT_ID;
+let guildsId = []
+let currentNewGuildId = null;
 const eventsNameArr = [];
 
 // express
@@ -14,7 +19,17 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
-const startRobot = async function (token) {
+const startRobot = async function (restart) {
+	if (restart) {
+		// console.log('restartrestart')
+		// console.log(bigClient.guildsId)
+		// console.log(bigClient.clientId)
+		await register(bigClient, false);
+		console.log('處理完畢重啟')
+		startRobot(false);
+		return ''
+	}
+	// await register();
 	const isEventExist = (eventsArray = [], eventName) => {
 		if (eventsArray.includes(eventName)) return true;
 		return false;
@@ -31,15 +46,16 @@ const startRobot = async function (token) {
 	
 	// Create a new client instance
 	const client = new Client({ intents, partials: ['CHANNEL'] });
-	// client.commands = new Collection();
-	// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+	client.commands = new Collection();
+	const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-	// for (const file of commandFiles) {
-	// 	const command = require(`./commands/${file}`);
-	// 	// Set a new item in the Collection
-	// 	// With the key as the command name and the value as the exported module
-	// 	client.commands.set(command.data.name, command);
-	// }
+	for (const file of commandFiles) {
+		const command = require(`./commands/${file}`);
+		// Set a new item in the Collection
+		// With the key as the command name and the value as the exported module
+		client.commands.set(command.data.name, command);
+	}
+	bigClient = client;
 
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 	const player = new Player(client, {
@@ -49,12 +65,21 @@ const startRobot = async function (token) {
 
 	client.player = player;
 	client.token = token;
+	client.clientId = clientId
+	client.guildsId = guildsId;
+	bigClient = client;
+
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.once(event.name, (...args) => {
-					event.execute(...args);
+					event.execute(...args, (needToRegisteredInfo) => {
+						console.log(needToRegisteredInfo)
+						guildsId = needToRegisteredInfo.guildsId
+						client.guildsId = guildsId;
+						bigClient = client;
+					});
 				});
 				eventsNameArr.push(event.name)
 			}
@@ -67,7 +92,15 @@ const startRobot = async function (token) {
 			}
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
-				client.on(event.name, (message) => event.execute(client, message));
+				client.on(event.name, (message) => {
+					event.execute(client, message, ({ newGuildIdToRegister }) => {
+						if (!guildsId.includes(currentNewGuildId)) guildsId.push(currentNewGuildId);
+						currentNewGuildId = newGuildIdToRegister;
+						client.currentNewGuildId = currentNewGuildId;
+						bigClient = client;
+						register(client, true)
+					})
+				});
 				eventsNameArr.push(event.name)
 			}
 		} else {
@@ -78,12 +111,6 @@ const startRobot = async function (token) {
 			}
 		}
 	}
-	client.on('guildMemberAdd', (guildMemberAdd) => {
-		//Your code
-		console.log('guildMemberAdd:::', guildMemberAdd)
-	});
-	console.info('event name:::', eventsNameArr)
-	console.info('client._events::', client._events)
 
 	// Login to Discord with your client's token
 	client.login(token);
@@ -107,13 +134,17 @@ app.get('/getInvite', (req, res) => {
 
 app.get('/restartbot', async (req, res) => {
 	try {
-		await startRobot(token);
+		await startRobot(true);
 		res.status(200)
 		res.render('successRes');
 	} catch (err) {
 		res.status(500);
 		res.render('err', {err});
 	}
+})
+
+app.get('/registerSlashCmd', async (req, res) => {
+	register();
 })
 
 app.get('*', function(req, res) {
@@ -142,13 +173,13 @@ app.listen(port, () => {
 
 
 try {
-	startRobot(token);
+	startRobot(false);
 } catch (err) {
 	console.error(err);
 	console.info('嘗試重啟機器人');
 	console.info('嘗試重啟機器人');
 	console.info('嘗試重啟機器人');
-	startRobot(token);
+	startRobot(false);
 }
 
 
