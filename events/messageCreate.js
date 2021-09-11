@@ -40,7 +40,6 @@ module.exports = {
 
 		const secretTime = 10;
 
-
 		console.info('guildQueue:', guildQueue);
 		console.info('guildQueue:', guildQueue, '\n');
 		
@@ -54,12 +53,14 @@ module.exports = {
 			case 'play': {
 				let queue = client.player.createQueue(message.guild.id);
 				await queue.join(message.member.voice.channel);
+				console.log(args.join(' '))
 				let song = await queue.play(args.join(' ')).catch(_ => {
 					console.error('error:', _)
 					if(!guildQueue) queue.stop();
 					console.log('結束了撥放')
 					console.log('結束了撥放')
 					console.log('結束了撥放')
+					throw _
 				});
 				break;
 			}

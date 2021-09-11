@@ -61,10 +61,36 @@ const startRobot = async function (restart) {
 		volume: 80
 	});
 
+	const playErrHandler = function (err, queue) {
+		console.log('------------------')
+		console.log('err:', err)
+		// if (queue?.guild?.systemChannelId) console.log(queue?.guild?.systemChannelId)
+		// else console.log(queue)
+		console.log('------------------')
+		console.log('\n\n')
+	}
+	player.on('error', (err, queue) => {
+		if (typeof(err) !== 'object') {
+			console.log('錯誤發生了', err)
+			const code = err.split(' ')[2]
+			const channelId = queue.guild.systemChannelId;
+			console.log(code)
+			switch (code) {
+				case '410':
+					client.channels.cache.get(channelId).send('Youtube可能不讓我撥放，不能怪我...換換別首歌吧...');
+					break;
+				default:
+					console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
+					break;
+			}
+		}
+	})
+
 	client.player = player;
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;
+	client.startRobot = startRobot
 	bigClient = client;
 
 	for (const file of eventFiles) {
