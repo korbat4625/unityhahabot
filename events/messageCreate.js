@@ -55,7 +55,6 @@ module.exports = {
 		const command = args.shift();
 		let guildQueue = client.player.getQueue(message.guild.id);
 
-		const defaultVol = 80;
 		const secretTime = 10;
 
 		console.info('guildQueue:', guildQueue);
@@ -89,25 +88,26 @@ module.exports = {
 				break;
 			}
 			case 'stop': {
-				guildQueue.stop();
+				console.log(guildQueue)
+				if (guildQueue !== undefined) guildQueue.stop();
 				break;
 			}
 			case 'setVolume': {
-				guildQueue.setVolume(parseInt(args[0]));
+				if (guildQueue !== undefined) guildQueue.setVolume(parseInt(args[0]));
 				break;
 			}
 			case 'pause': {
-				guildQueue.setPaused(true);
+				if (guildQueue !== undefined) guildQueue.setPaused(true);
 				break;
 			}
 			case 'resume': {
-				guildQueue.setPaused(false);
+				if (guildQueue !== undefined) guildQueue.setPaused(false);
 				break;
 			}
 			case 'search': {
-				console.info('進行搜尋');
-				console.info('進行搜尋');
-				console.info('進行搜尋');
+				// console.info('進行搜尋');
+				// console.info('進行搜尋');
+				// console.info('進行搜尋');
 
 				const videoResultLength = 5;
 				let videoResult = null
@@ -116,22 +116,20 @@ module.exports = {
 					keyWords += args[i] + ' '
 				}
 				keyWords = keyWords.trim();
-				console.log(keyWords)
 				videoResult = await videoFinder(keyWords);
 				const videos = videoResult.videos;
 				const sortedVideos = videos.sort(function(a, b) {
 					return b.views -a.views
 				})
-
 				const embeds = []
 
 				for (let i = 0; i < videoResultLength; i++) {
 					// inside a command, event listener, etc.
 					const exampleEmbed = new MessageEmbed()
+						.setAuthor(sortedVideos[i].author.name, sortedVideos[i].thumbnail, sortedVideos[i].url)
 						.setColor('#0099ff')
 						.setTitle(sortedVideos[i].title)
 						.setURL(sortedVideos[i].url)
-						.setAuthor(sortedVideos[i].author.name, sortedVideos[i].thumbnail, sortedVideos[i].url)
 						.setDescription(sortedVideos[i].description)
 						.setThumbnail(sortedVideos[i].thumbnail)
 						.addFields(
@@ -143,7 +141,7 @@ module.exports = {
 						.setTimestamp(sortedVideos[i].timestamp);
 					embeds.push(exampleEmbed)
 				}
-				console.log('不該連續出現');
+				// console.log('不該連續出現');
 				message.reply({embeds});
 				break;
 			}
@@ -157,7 +155,6 @@ module.exports = {
 				return showCommand(command);
 			}
 			default:
-				console.log('wrong')
 				return showCommand(command);
 		}
 		return ''
