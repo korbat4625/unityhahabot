@@ -20,7 +20,7 @@ const port = process.env.PORT || 5000;
 
 process.on('unhandledRejection', error => {
   console.error('unhandledRejection');
-  console.err(error)
+  console.error(error)
   process.exit(1) // To exit with a 'failure' code
 });
 
