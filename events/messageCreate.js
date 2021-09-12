@@ -40,7 +40,7 @@ module.exports = {
 
 		console.info('args:', args);
 		console.info('args:', args, '\n');
-		player.on('error', (err, queue) => {
+		client.player.on('error', (err, queue) => {
 			console.log('撥放器發生錯誤222...')
 			console.log(err)
 			console.log(queue)
