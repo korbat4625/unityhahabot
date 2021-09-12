@@ -2,7 +2,7 @@ module.exports={
   apps:[{
     name:"unitybot",
     script:"./index.js",
-    instances:"max",
+    instances:"1",
     env:{
       NODE_ENV:"development",
     },
