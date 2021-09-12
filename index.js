@@ -60,7 +60,7 @@ const startRobot = async function (restart) {
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 	const player = new Player(client, {
 		leaveOnEmpty: false, // This options are optional.
-		volume: 80
+		volume: 85
 	});
 
 
