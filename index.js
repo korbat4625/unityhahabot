@@ -70,9 +70,7 @@ const startRobot = async (restart) => {
 		volume: 85
 	});
 
-
-	client.player = player;
-	client.player.on('error', (err, queue) => {
+	player.on('error', (err, queue) => {
 		console.log('撥放器發生錯誤...')
 		console.log(err)
 		console.log(queue)
@@ -109,7 +107,7 @@ const startRobot = async (restart) => {
 			}
 		}
 	})
-	
+	client.player = player;
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;

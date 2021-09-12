@@ -1,5 +1,5 @@
 const ytSearch = require('yt-search');
-const ytdl = require('ytdl-core');
+// const ytdl = require('ytdl-core');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
@@ -40,7 +40,12 @@ module.exports = {
 
 		console.info('args:', args);
 		console.info('args:', args, '\n');
-
+		player.on('error', (err, queue) => {
+			console.log('撥放器發生錯誤222...')
+			console.log(err)
+			console.log(queue)
+			
+		})
 		switch (command) {
 			case 'play': {
 				let queue = client.player.createQueue(message.guild.id);
