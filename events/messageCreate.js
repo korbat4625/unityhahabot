@@ -47,7 +47,8 @@ module.exports = {
 				await queue.join(message.member.voice.channel);
 				console.log(args.join(' '))
 				let song = await queue.play(args.join(' ')).catch(_ => {
-					console.error('error:', _)
+					console.info('播放途中錯誤')
+					console.error(_)
 					if(!guildQueue)  {
 						queue.stop();
 						console.log('結束了撥放')

@@ -66,6 +66,9 @@ const startRobot = async function (restart) {
 
 	client.player = player;
 	client.player.on('error', (err, queue) => {
+		console.log('撥放器發生錯誤...')
+		console.log(err)
+		console.log(queue)
 		if (typeof(err) !== 'object') {
 			let targetCh;
 			let buffer = [];
