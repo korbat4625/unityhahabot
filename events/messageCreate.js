@@ -100,7 +100,7 @@ module.exports = {
 				keyWords = keyWords.trim();
 				videoResult = await videoFinder(keyWords);
 				const videos = videoResult.videos;
-				const sortedVideos = videos.sort(function(a, b) {
+				const sortedVideos = videos.sort((a, b) => {
 					return b.views -a.views
 				})
 				const embeds = []

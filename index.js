@@ -24,7 +24,7 @@ process.on('unhandledRejection', error => {
   process.exit(1) // To exit with a 'failure' code
 });
 
-const startRobot = async function (restart) {
+const startRobot = async (restart) => {
 	if (restart) {
 		// console.log('restartrestart')
 		// console.log(bigClient.guildsId)
