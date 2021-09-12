@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start":"pm2 start ecosystem.config.js --env production",
+    "preinstall": "npm install pm2 -g",
+    "start": "pm2 start ecosystem.config.js --env production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
