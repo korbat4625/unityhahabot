@@ -18,6 +18,12 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
+process.on('unhandledRejection', error => {
+  console.error('unhandledRejection');
+  console.err(error)
+  process.exit(1) // To exit with a 'failure' code
+});
+
 const startRobot = async function (restart) {
 	if (restart) {
 		// console.log('restartrestart')
@@ -28,6 +34,7 @@ const startRobot = async function (restart) {
 		startRobot(false);
 		return ''
 	}
+	console.log('程序以重啟')
 	console.log('開始start流程')
 	// await register();
 	const isEventExist = (eventsArray = [], eventName) => {
