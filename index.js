@@ -6,12 +6,17 @@ const nodeCron = require("node-cron");
 
 const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
+const register = require('./deploy-command');
+const { Player } = require("discord-player");
+
+// Require the necessary discord.js classes
+// const { Player } = require("discord-music-player");
 const { Client, Collection, Intents } = require('discord.js');
 
 let bigClient = null;
 const token = process.env.HAHA_TOKEN;
 const clientId = process.env.CLIENT_ID;
-let guildsId = []
+let guildsId = [];
 const eventsNameArr = [];
 
 // express
@@ -21,10 +26,6 @@ const port = process.env.PORT || 5000;
 
 const startRobot = async function (restart) {
 	if (restart) {
-		// console.log('restartrestart')
-		// console.log(bigClient.guildsId)
-		// console.log(bigClient.clientId)
-		// await register(bigClient, false);
 		console.log('處理完畢重啟')
 		startRobot(false);
 		return ''
@@ -56,51 +57,61 @@ const startRobot = async function (restart) {
 		// With the key as the command name and the value as the exported module
 		client.commands.set(command.data.name, command);
 	}
+
 	bigClient = client;
 
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-	const player = new Player(client, {
-		leaveOnEmpty: false, // This options are optional.
-		volume: 80
-	});
+	// const player = new Player(client, {
+	// 	leaveOnEmpty: false, // This options are optional.
+	// 	volume: 85
+	// });
 
+	// player.on('error', (err, queue) => {
+	// 	console.log('撥放器發生錯誤...')
+	// 	console.log(err)
+	// 	console.log(queue)
+	// 	if (typeof(err) !== 'object') {
+	// 		let targetCh;
+	// 		let buffer = [];
+	// 		const guildId = queue.guild.id;
+	// 		const channels = client.channels.cache;
+	// 		// console.log(channels)
+	// 		const code = err.split(' ')[2]
+	// 		const channelName = queue.connection.channel.name
+	// 		// console.log(channelName)
+	// 		const channelsPair = [...channels].filter(([id, ch]) => {
+	// 			return ch.name === channelName && ch.guildId === guildId
+	// 		})
+	// 		for (items of channelsPair) {
+	// 			for (item of items) {
+	// 				buffer.push(item)
+	// 			}
+	// 		}
+	// 		targetCh = buffer.filter(item => {
+	// 			return item?.type === 'GUILD_TEXT' && item.name === channelName
+	// 		})[0]
+	// 		console.log(targetCh)
+	// 		switch (code) {
+	// 			case '410':
+	// 				targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
+	// 				client.player.deleteQueue(queue.guild.id)
+	// 				break;
+	// 			default:
+	// 				console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
+	// 				targetCh.send('我也不知道...抱歉...反正撥不了，換換別首歌吧...');
+	// 				break;
+	// 		}
+	// 	}
+	// })
 
+	// Create a new Player (you don't need any API Key)
+	const player = new Player(client);
 	client.player = player;
-	client.player.on('error', (err, queue) => {
-		if (typeof(err) !== 'object') {
-			let targetCh;
-			let buffer = [];
-			const guildId = queue.guild.id;
-			const channels = client.channels.cache;
-			// console.log(channels)
-			const code = err.split(' ')[2]
-			const channelName = queue.connection.channel.name
-			// console.log(channelName)
-			const channelsPair = [...channels].filter(([id, ch]) => {
-				return ch.name === channelName && ch.guildId === guildId
-			})
-			for (items of channelsPair) {
-				for (item of items) {
-					buffer.push(item)
-				}
-			}
-			targetCh = buffer.filter(item => {
-				return item?.type === 'GUILD_TEXT' && item.name === channelName
-			})[0]
-			console.log(targetCh)
-			switch (code) {
-				case '410':
-					targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
-					client.player.deleteQueue(queue.guild.id)
-					break;
-				default:
-					console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
-					targetCh.send('我也不知道...抱歉...反正撥不了，換換別首歌吧...');
-					break;
-			}
-		}
+	client.player.on("trackStart", (queue, track) => queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`))
+	client.player.on("trackEnd", (queue, track) => {
+		console.log('一手播放結束')
+		console.log(track)
 	})
-	
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;

@@ -6,7 +6,7 @@ module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message, callback) {
-		// console.info('message:::', message, '\n')
+		// console.info('message:::', message.channel, '\n')
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
 			console.warn('這是機器人觸發訊息!!!');
@@ -28,62 +28,62 @@ module.exports = {
 		const prefix = '$$'
 		const args = message.content.slice(prefix.length).trim().split(/ +/g);
 		const command = args.shift();
-		let guildQueue = client.player.getQueue(message.guild.id);
+		// let guildQueue = client.player.getQueue(message.guild.id);
 
 		const secretTime = 10;
 
-		console.info('guildQueue:', guildQueue);
-		console.info('guildQueue:', guildQueue, '\n');
+		// console.info('guildQueue:', guildQueue);
+		// console.info('guildQueue:', guildQueue, '\n');
 		
 		console.info('command:', command);
 		console.info('command:', command);
 
 		console.info('args:', args);
-		console.info('args:', args, '\n');
-
+		console.info('args:', args, '\n')
+		const query = args[0];
+		const queue = client.player.createQueue(message.guild, {
+			metadata: {
+				channel: message.channel
+			}
+		});
 		switch (command) {
 			case 'play': {
-				let queue = client.player.createQueue(message.guild.id);
-				await queue.join(message.member.voice.channel);
-				console.log(args.join(' '))
-				let song = await queue.play(args.join(' ')).catch(_ => {
-					console.error('error:', _)
-					if(!guildQueue)  {
-						queue.stop();
-						console.log('結束了撥放')
-						console.log('結束了撥放')
-						console.log('結束了撥放')
-					}
-					client.startRobot()
-					throw _
+				// verify vc connection
+				try {
+					if (!queue.connection) await queue.connect(voiceChannel);
+				} catch {
+					queue.destroy();
+					return await message.reply({ content: "Could not join your voice channel!", ephemeral: true });
+				}
+		
+				// await interaction.deferReply();
+				const track = await client.player.search(query, {
+					requestedBy: message.client.user
+				}).then(x => {
+					console.log(x)
+					return x.tracks[0]
 				});
-
-				break;
-			}
-			case 'playlist': {
-				let queue = client.player.createQueue(message.guild.id);
-				await queue.join(message.member.voice.channel);
-				let song = await queue.playlist(args.join(' ')).catch(_ => {
-					if(!guildQueue) queue.stop();
-				});
-				break;
+				if (!track) return await message.reply({ content: `❌ | Track **${query}** not found!` });
+		
+				queue.play(track);
+		
+				return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
 			}
 			case 'stop': {
-				// console.log(guildQueue)
-				if (guildQueue !== undefined) guildQueue.stop();
-				break;
+				if (queue !== undefined) queue.stop();
+				return ''
 			}
 			case 'setVolume': {
-				if (guildQueue !== undefined) guildQueue.setVolume(parseInt(args[0]));
-				break;
+				if (queue !== undefined) queue.setVolume(Number(args[0]));
+				return ''
 			}
 			case 'pause': {
-				if (guildQueue !== undefined) guildQueue.setPaused(true);
-				break;
+				if (queue !== undefined) queue.setPaused(true);
+				return ''
 			}
 			case 'resume': {
-				if (guildQueue !== undefined) guildQueue.setPaused(false);
-				break;
+				if (queue !== undefined) queue.setPaused(false);
+				return ''
 			}
 			case 'search': {
 				// console.info('進行搜尋');

@@ -1,4 +1,3 @@
-const register = require('../deploy-command');
 module.exports = {
 	name: 'ready',
 	once: true,
