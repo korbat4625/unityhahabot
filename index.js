@@ -1,9 +1,10 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const register = require('./deploy-command');
+const nodeCron = require("node-cron");
 // Require the necessary discord.js classes
 
+const register = require('./deploy-command');
 const { Player } = require("discord-music-player");
 const { Client, Collection, Intents } = require('discord.js');
 
@@ -228,6 +229,9 @@ app.listen(port, () => {
 
 try {
 	startRobot(false);
+	cron.schedule('* 3 * * *', () => {
+		startRobot(false);
+	});
 } catch (err) {
 	console.error(err);
 	console.info('嘗試重啟機器人');
