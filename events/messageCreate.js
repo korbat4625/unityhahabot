@@ -1,24 +1,15 @@
-const {
-	AudioPlayerStatus,
-	StreamType,
-	createAudioPlayer,
-	createAudioResource,
-	joinVoiceChannel,
-} = require('@discordjs/voice');
-
 const ytSearch = require('yt-search');
 const ytdl = require('ytdl-core');
 const { MessageEmbed } = require('discord.js');
 
-
 module.exports = {
 	name: 'messageCreate',
 	once: false,
-	async execute(client, message) {
-		console.info('message:::', message, '\n')
+	async execute(client, message, callback) {
+		// console.info('message:::', message, '\n')
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
-			console.warn('這是機器人說話!!!');
+			console.warn('這是機器人觸發訊息!!!');
 			return ''
 		}
 		if (message.type === 'REPLY') return ''
@@ -34,22 +25,6 @@ module.exports = {
 			return await ytSearch(keywords);
 		}
 
-		const showCommand = (command) => {
-			const wrong = command === '?' ? '' : '請輸入正確的指令...\n'
-			const text =
-				wrong +
-				'$$? => 看指令\n' +
-				'$$play Youtube網址 => 撥放YT音樂\n' +
-				'$$playlist Youtube網址 => 撥放YT音樂清單\n' +
-				'$$stop => 結束撥放\n' +
-				'$$pause => 暫停撥放\n' +
-				'$$resume => 恢復撥放\n' +
-				'$$setVolume 0~100 => 設置撥放中音量\n' + 
-				'$$search 關鍵字 => 搜尋YT關鍵字前5名撥放量，可自行用於複製URL並使用$$play撥放\n' +
-				'$$secret => 不建議嘗試';
-			return message.reply(text);
-		}
-
 		const prefix = '$$'
 		const args = message.content.slice(prefix.length).trim().split(/ +/g);
 		const command = args.shift();
@@ -58,25 +33,31 @@ module.exports = {
 		const secretTime = 10;
 
 		console.info('guildQueue:', guildQueue);
-		console.info('guildQueue:', guildQueue);
 		console.info('guildQueue:', guildQueue, '\n');
 		
 		console.info('command:', command);
 		console.info('command:', command);
+
 		console.info('args:', args);
 		console.info('args:', args, '\n');
 
 		switch (command) {
-			case 'getGuildQueue': {
-				console.info('guildQueue:', guildQueue);
-				break;
-			}
 			case 'play': {
 				let queue = client.player.createQueue(message.guild.id);
 				await queue.join(message.member.voice.channel);
+				console.log(args.join(' '))
 				let song = await queue.play(args.join(' ')).catch(_ => {
-					if(!guildQueue) queue.stop();
+					console.error('error:', _)
+					if(!guildQueue)  {
+						queue.stop();
+						console.log('結束了撥放')
+						console.log('結束了撥放')
+						console.log('結束了撥放')
+					}
+					client.startRobot()
+					throw _
 				});
+
 				break;
 			}
 			case 'playlist': {
@@ -88,7 +69,7 @@ module.exports = {
 				break;
 			}
 			case 'stop': {
-				console.log(guildQueue)
+				// console.log(guildQueue)
 				if (guildQueue !== undefined) guildQueue.stop();
 				break;
 			}
@@ -151,101 +132,9 @@ module.exports = {
 				}
 				return;
 			}
-			case '?': {
-				return showCommand(command);
-			}
 			default:
-				return showCommand(command);
+				return message.reply('指令有誤，請使用 /checkcmd 查看指令。')
 		}
 		return ''
-		// 解析$$order
-		// const excuteOrder = order[0].split('$$')[1];
-		// const param = order[1];
-		// const videoResultLength = 5;
-		// let videoResult = null
-
-		// switch (excuteOrder) {
-		// 	case 'search':
-		// 		videoResult = await videoFinder(param);
-		// 		console.log(videoResult)
-		// 		const videos = videoResult.videos
-		// 		let text = '';
-		// 		for (let i = 0; i < videoResultLength; i++) {
-		// 			text += `
-		// 				${i+1}. ${videos[i].title}\n
-		// 				${videos[i].image}
-		// 				描述: ${videos[i].description}\n
-		// 				時長: ${videos[i].timestamp}\n
-		// 				建立時間: ${videos[i].ago}\n
-		// 				瀏覽次數: ${videos[i].views}\n\n\n
-		// 			`
-		// 		}
-		// 		return message.reply(
-		// 			'找到有關 "' + param + '"的影片:\n' +
-		// 			text
-		// 		)
-		// 		break;
-		// 	case 'play':
-		// 		// async function play(connection, player, resource) {
-		// 		// 	await player.play(resource);
-		// 		// 	connection.subscribe(player);
-		// 		// }
-
-		// 		// const connection = joinVoiceChannel({
-		// 		// 	channelId: message.member.voice.channel.id,
-		// 		// 	guildId: message.guild.id,
-		// 		// 	adapterCreator: message.guild.voiceAdapterCreator,
-		// 		// });
-		// 		// console.log('connnnection:', connection)
-		// 		// console.log('paramparam', param)
-		// 		// const videoInfo = ytdl.getInfo(param);
-		// 		// const stream = ytdl.downloadFromInfo(videoInfo)
-		// 		// // const stream = ytdl(param, {
-		// 		// // 	filter: "audioonly"
-		// 		// // });
-		// 		// const player = createAudioPlayer();
-		// 		// const resource = createAudioResource(stream, {
-		// 		// 	inputType: StreamType.Arbitrary,
-		// 		// 	inlineVolume: true
-		// 		// });
-		// 		// player.play(resource)
-		// 		// entersState(player, AudioPlayerStatus.Playing, 5e3)
-		// 		// connection.subscribe(player)
-		// 		// player.on('subscribe', async () => {
-		// 		// 	return message.reply(`:thumbsup: Now Playing ***${video.title}***`);
-		// 		// })
-		// 		// play(connection, player, resource);
-				
-				
-		// 		// ...
-				
-		// 		const connection = joinVoiceChannel({
-		// 			channelId: message.member.voice.channel.id,
-		// 			guildId: message.guild.id,
-		// 			adapterCreator: message.guild.voiceAdapterCreator,
-		// 		});
-				
-		// 		const stream = ytdl(param, { filter: 'audioonly' });
-		// 		const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
-		// 		const player = createAudioPlayer();
-				
-		// 		player.play(resource);
-		// 		connection.subscribe(player);
-				
-		// 		player.on(AudioPlayerStatus.Idle, () => connection.destroy());
-		// 		break;
-		// 	default: break;
-		// }
-	
-		// console.log('channelchannelchannel::', channel)
-		// console.log(`members :: ${channel.guild.members}\nchannels:: ${channel.guild.channels}\nvoiceStates:: ${channel.guild.voiceStates}\nroles:: ${channel.guild.roles}\ncommands:: ${channel.guild.commands}`)
-		// if (message.type !== 'REPLY') {
-		// 	// message.reply(`members :: ${channel.guild.members}\nchannels:: ${channel.guild.channels}\nvoiceStates:: ${channel.guild.voiceStates}\nroles:: ${channel.guild.roles}\ncommands:: ${channel.guild.commands}`)
-		// 	message.reply(
-		// 		'message sender:' + message.author.username + '\n' + 
-		// 		'message content:' + message.content + '\n'
-		// 	)
-		// 	message.channel.send(`第一段指令:$$${excuteOrder}\n第二段參數:${order[1]}`);
-		// }
 	}
 };

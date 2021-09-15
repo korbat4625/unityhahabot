@@ -1,12 +1,16 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-
-// Require the necessary discord.js classes
 const register = require('./deploy-command');
+// Require the necessary discord.js classes
+
 const { Player } = require("discord-music-player");
 const { Client, Collection, Intents } = require('discord.js');
-const token = process.env.HAHA_TOKEN_STAGING;
+
+let bigClient = null;
+const token = process.env.HAHA_TOKEN;
+const clientId = process.env.CLIENT_ID;
+let guildsId = []
 const eventsNameArr = [];
 
 // express
@@ -14,8 +18,18 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
-const startRobot = function (token) {
-	// await register()
+const startRobot = async function (restart) {
+	if (restart) {
+		// console.log('restartrestart')
+		// console.log(bigClient.guildsId)
+		// console.log(bigClient.clientId)
+		// await register(bigClient, false);
+		console.log('處理完畢重啟')
+		startRobot(false);
+		return ''
+	}
+	console.log('開始start流程')
+	// await register();
 	const isEventExist = (eventsArray = [], eventName) => {
 		if (eventsArray.includes(eventName)) return true;
 		return false;
@@ -26,26 +40,83 @@ const startRobot = function (token) {
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.DIRECT_MESSAGES,
 		Intents.FLAGS.GUILD_VOICE_STATES
+		// Intents.FLAGS.GUILD_MEMBERS,
+		// Intents.FLAGS.GUILD_PRESENCES
 	]);
 	
 	// Create a new client instance
 	const client = new Client({ intents, partials: ['CHANNEL'] });
-	// client.commands = new Collection();
+	client.commands = new Collection();
+	const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-	// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const command = require(`./commands/${file}`);
+		// Set a new item in the Collection
+		// With the key as the command name and the value as the exported module
+		client.commands.set(command.data.name, command);
+	}
+	bigClient = client;
+
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 	const player = new Player(client, {
 		leaveOnEmpty: false, // This options are optional.
 		volume: 80
 	});
 
+
 	client.player = player;
+	client.player.on('error', (err, queue) => {
+		if (typeof(err) !== 'object') {
+			let targetCh;
+			let buffer = [];
+			const guildId = queue.guild.id;
+			const channels = client.channels.cache;
+			// console.log(channels)
+			const code = err.split(' ')[2]
+			const channelName = queue.connection.channel.name
+			// console.log(channelName)
+			const channelsPair = [...channels].filter(([id, ch]) => {
+				return ch.name === channelName && ch.guildId === guildId
+			})
+			for (items of channelsPair) {
+				for (item of items) {
+					buffer.push(item)
+				}
+			}
+			targetCh = buffer.filter(item => {
+				return item?.type === 'GUILD_TEXT' && item.name === channelName
+			})[0]
+			console.log(targetCh)
+			switch (code) {
+				case '410':
+					targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
+					client.player.deleteQueue(queue.guild.id)
+					break;
+				default:
+					console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
+					targetCh.send('我也不知道...抱歉...反正撥不了，換換別首歌吧...');
+					break;
+			}
+		}
+	})
+	
+	client.token = token;
+	client.clientId = clientId
+	client.guildsId = guildsId;
+	client.startRobot = startRobot
+	bigClient = client;
+
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.once(event.name, (...args) => {
-					event.execute(...args);
+					event.execute(...args, (needToRegisteredInfo) => {
+						// console.log(needToRegisteredInfo)
+						guildsId = needToRegisteredInfo.guildsId
+						client.guildsId = guildsId;
+						bigClient = client;
+					});
 				});
 				eventsNameArr.push(event.name)
 			}
@@ -58,21 +129,38 @@ const startRobot = function (token) {
 			}
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
-				client.on(event.name, (message) => event.execute(client, message));
+				client.on(event.name, (message) => {
+					event.execute(client, message);
+				});
 				eventsNameArr.push(event.name)
 			}
 		} else {
 			if (!isEventExist(eventsNameArr, event.name)) {
+				// console.log('註冊了', event.name)
 				client.on(event.name, (...args) => event.execute(...args));
 				eventsNameArr.push(event.name)
 			}
 		}
 	}
-	console.info('event name:::', eventsNameArr)
-	console.info('client._events::', client._events)
+
+	client.on('guildCreate', (guild) => {
+		client.currentNewGuildId = guild.id
+		if (guild.client.user.bot) {
+			console.log('新加入的是一個機器人')
+			if (!guildsId.includes(guild.id)) {
+				guildsId.push(guild.id);
+				console.log('有推guildsId:', guildsId);
+			}
+			client.guildsId = guildsId;
+			bigClient = client;
+			console.log('執行註冊');
+			register(client, true);
+		}
+	})
 
 	// Login to Discord with your client's token
-	client.login(token);
+	await client.login(token);
+	// console.log(client.guilds.cache)
 }
 
 
@@ -86,14 +174,29 @@ app.get('/getInvite', (req, res) => {
 	res.status(200);
 	res.render('index', {
 		title: '歡迎你，我是unityhahabot',
+<<<<<<< HEAD
 		botInviteUrl: process.env.HAHA_INVITE_URL_STAGING,
+=======
+		botInviteUrl: process.env.HAHA_INVITE_URL,
+>>>>>>> master
 		test: '測試字串'
 	});
 });
 
 app.get('/restartbot', async (req, res) => {
 	try {
-		await startRobot(token);
+		startRobot();
+		res.status(200);
+		res.render('successRes');
+	} catch (err) {
+		res.status(500);
+		res.render('err', {err});
+	}
+})
+
+app.get('/deployCmd', async (req, res) => {
+	try {
+		register(bigClient, false);
 		res.status(200)
 		res.render('successRes');
 	} catch (err) {
@@ -128,13 +231,13 @@ app.listen(port, () => {
 
 
 try {
-	startRobot(token);
+	startRobot(false);
 } catch (err) {
 	console.error(err);
 	console.info('嘗試重啟機器人');
 	console.info('嘗試重啟機器人');
 	console.info('嘗試重啟機器人');
-	startRobot(token);
+	startRobot(false);
 }
 
 
