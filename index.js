@@ -5,8 +5,8 @@ const nodeCron = require("node-cron");
 // Require the necessary discord.js classes
 
 const register = require('./deploy-command');
-const { Player } = require("discord-music-player");
-const register = require('./deploy-command');
+// const { Player } = require("discord-music-player");
+// const register = require('./deploy-command');
 const { Player } = require("discord-player");
 
 // Require the necessary discord.js classes
@@ -240,7 +240,7 @@ app.listen(port, () => {
 
 try {
 	startRobot(false);
-	cron.schedule('* 3 * * *', () => {
+	nodeCron.schedule('* 3 * * *', () => {
 		startRobot(false);
 	});
 } catch (err) {
