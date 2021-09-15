@@ -174,11 +174,7 @@ app.get('/getInvite', (req, res) => {
 	res.status(200);
 	res.render('index', {
 		title: '歡迎你，我是unityhahabot',
-<<<<<<< HEAD
-		botInviteUrl: process.env.HAHA_INVITE_URL_STAGING,
-=======
 		botInviteUrl: process.env.HAHA_INVITE_URL,
->>>>>>> master
 		test: '測試字串'
 	});
 });
