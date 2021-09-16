@@ -1,12 +1,19 @@
 const ytSearch = require('yt-search');
 const ytdl = require('ytdl-core');
+const {
+	AudioPlayerStatus,
+	StreamType,
+	createAudioPlayer,
+	createAudioResource,
+	joinVoiceChannel,
+} = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message, callback) {
-		// console.info('message:::', message.channel, '\n')
+		// console.info('message guild id:::', message.guild.voiceAdapterCreator, '\n')
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
 			console.warn('這是機器人觸發訊息!!!');
@@ -41,39 +48,70 @@ module.exports = {
 		console.info('args:', args);
 		console.info('args:', args, '\n')
 		const query = args[0];
-		const queue = client.player.createQueue(message.guild, {
-			metadata: {
-				channel: message.channel
-			}
+		// const queue = client.player.createQueue(message.guild, {
+		// 	metadata: {
+		// 		channel: message.channel
+		// 	}
+		// });
+		const connection = joinVoiceChannel({
+			channelId: voiceChannel.id,
+			guildId: message.guild.id,
+			adapterCreator: message.guild.voiceAdapterCreator
 		});
+		const stream = ytdl(query, { filter: 'audioonly' });
+		const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+		const player = createAudioPlayer();
+		bigplayer = player
+		player.on(AudioPlayerStatus.Idle, (msg) => {
+			console.log('player msg::', msg)
+			connection.destroy()
+		});
+		player.on('error', error => {
+			console.error('Error:', error.message, 'with track', error.resource);
+		});
+		console.log(query)
+
 		switch (command) {
+			case 'join': {
+				connection.rejoin();
+			}
 			case 'play': {
 				// verify vc connection
-				try {
-					if (!queue.connection) await queue.connect(voiceChannel);
-				} catch {
-					queue.destroy();
-					return await message.reply({ content: "Could not join your voice channel!", ephemeral: true });
-				}
+				// try {
+				// 	if (!queue.connection) await queue.connect(voiceChannel);
+				// } catch {
+				// 	queue.destroy();
+				// 	return await message.reply({ content: "Could not join your voice channel!", ephemeral: true });
+				// }
 		
-				// await interaction.deferReply();
-				const track = await client.player.search(query, {
-					requestedBy: message.client.user
-				}).then(x => {
-					console.log(x)
-					return x.tracks[0]
-				});
-				if (!track) return await message.reply({ content: `❌ | Track **${query}** not found!` });
+				// // await interaction.deferReply();
+				// const track = await client.player.search(query, {
+				// 	requestedBy: message.client.user
+				// }).then(x => {
+				// 	console.log(x)
+				// 	return x.tracks[0]
+				// });
+				// if (!track) return await message.reply({ content: `❌ | Track **${query}** not found!` });
 		
-				queue.play(track);
+				// queue.play(track);
 		
-				return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
+				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
+				
+				player.play(resource);
+				connection.subscribe(player);
+				return ''
 			}
 			case 'stop': {
-				if (queue !== undefined) queue.stop();
+				// const player = createAudioPlayer();
+				// console.log('bigplayerbigplayer', bigplayer)
+				console.log('stop');
+				player.stop(true);
+				connection.subscribe(player);
+				connection.destroy();
 				return ''
 			}
 			case 'setVolume': {
+				console.log('setetvolume')
 				if (queue !== undefined) queue.setVolume(Number(args[0]));
 				return ''
 			}

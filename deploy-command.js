@@ -10,7 +10,7 @@ module.exports = async function (client, single = false) {
 			Routes.applicationGuildCommands(client.clientId, guildId),
 			{ body: commands },
 		)
-		console.log(guildId + '...完成')
+		console.log(guildId + '...完成\n\n')
 		return response
 	}
 	
@@ -18,6 +18,7 @@ module.exports = async function (client, single = false) {
 	console.info('guildsId:::', client.guildsId)
 	console.info('token:::', client.token)
 	console.info('currentNewGuildId:::', client.currentNewGuildId)
+	console.log('\n\n')
 
 	for (const file of commandFiles) {
 		const command = require(`./commands/${file}`);
@@ -29,9 +30,11 @@ module.exports = async function (client, single = false) {
 	return (async () => {
 		try {
 			if (single) {
+				console.log('註冊單一guild id:', client.currentNewGuildId)
 				await regis(client.currentNewGuildId);
 				return ''
 			} else {
+				console.log('註冊多個guild id:')
 				for (let guildId of client.guildsId) {
 					console.log('送' + guildId + '進去')
 					await regis(guildId);

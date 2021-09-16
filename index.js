@@ -7,10 +7,12 @@ const nodeCron = require("node-cron");
 const register = require('./deploy-command');
 // const { Player } = require("discord-music-player");
 // const register = require('./deploy-command');
-const { Player } = require("discord-player");
+// const { Player } = require("discord-player");
 
 // Require the necessary discord.js classes
 // const { Player } = require("discord-music-player");
+
+// discord.js
 const { Client, Collection, Intents } = require('discord.js');
 
 let bigClient = null;
@@ -105,13 +107,13 @@ const startRobot = async function (restart) {
 	// })
 
 	// Create a new Player (you don't need any API Key)
-	const player = new Player(client);
-	client.player = player;
-	client.player.on("trackStart", (queue, track) => queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`))
-	client.player.on("trackEnd", (queue, track) => {
-		console.log('一手播放結束')
-		console.log(track)
-	})
+	// const player = new Player(client);
+	// client.player = player;
+	// client.player.on("trackStart", (queue, track) => queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`))
+	// client.player.on("trackEnd", (queue, track) => {
+	// 	console.log('一手播放結束')
+	// 	console.log(track)
+	// })
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;
@@ -121,37 +123,33 @@ const startRobot = async function (restart) {
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				client.once(event.name, (...args) => {
-					event.execute(...args, (needToRegisteredInfo) => {
-						// console.log(needToRegisteredInfo)
-						guildsId = needToRegisteredInfo.guildsId
-						client.guildsId = guildsId;
-						bigClient = client;
-					});
+			client.once(event.name, (...args) => {
+				event.execute(...args, (needToRegisteredInfo) => {
+					// console.log(needToRegisteredInfo)
+					guildsId = needToRegisteredInfo.guildsId
+					client.guildsId = guildsId;
+					bigClient = client;
+					console.log('登入後的ID們')
+					console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
+					// tconsole.log('clien::::', client)
+					register(client, false)
 				});
-				eventsNameArr.push(event.name)
-			}
+			});
+			eventsNameArr.push(event.name)
 		} else if (event.name === 'interactionCreate') {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				client.on(event.name, (interaction) => {
-					event.execute(interaction, client);
-				});
-				eventsNameArr.push(event.name)
-			}
+			client.on(event.name, (interaction) => {
+				event.execute(interaction, client);
+			});
+			eventsNameArr.push(event.name)
 		} else if (event.name === 'messageCreate') {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				client.on(event.name, (message) => {
-					event.execute(client, message);
-				});
-				eventsNameArr.push(event.name)
-			}
+			client.on(event.name, (message) => {
+				event.execute(client, message);
+			});
+			eventsNameArr.push(event.name)
 		} else {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				// console.log('註冊了', event.name)
-				client.on(event.name, (...args) => event.execute(...args));
-				eventsNameArr.push(event.name)
-			}
+			// console.log('註冊了', event.name)
+			client.on(event.name, (...args) => event.execute(...args));
+			eventsNameArr.push(event.name)
 		}
 	}
 
@@ -237,10 +235,20 @@ app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
 });
 
+process.on('uncaughtException', function (err) {
+	console.log(err);
+	process.exit(1)
+})
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+	process.exit(1)
+});
+
 
 try {
 	startRobot(false);
-	nodeCron.schedule('* 3 * * *', () => {
+	nodeCron.schedule('* 1 * * *', () => {
 		startRobot(false);
 	});
 } catch (err) {
