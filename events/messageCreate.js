@@ -59,12 +59,16 @@ module.exports = {
 			adapterCreator: message.guild.voiceAdapterCreator
 		});
 		const stream = ytdl(query, { filter: 'audioonly' });
-		const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+		const resource = createAudioResource(stream);
+		// resource.volume.setVolume(0.1)
 		const player = createAudioPlayer();
-		bigplayer = player
 		player.on(AudioPlayerStatus.Idle, (msg) => {
 			console.log('player msg::', msg)
 			connection.destroy()
+		});
+		
+		player.on(AudioPlayerStatus.Playing, (msg) => {
+			console.log('The audio player has started playing!', msg);
 		});
 		player.on('error', error => {
 			console.error('Error:', error.message, 'with track', error.resource);
@@ -102,8 +106,6 @@ module.exports = {
 				return ''
 			}
 			case 'stop': {
-				// const player = createAudioPlayer();
-				// console.log('bigplayerbigplayer', bigplayer)
 				console.log('stop');
 				player.stop(true);
 				connection.subscribe(player);
@@ -111,16 +113,24 @@ module.exports = {
 				return ''
 			}
 			case 'setVolume': {
-				console.log('setetvolume')
-				if (queue !== undefined) queue.setVolume(Number(args[0]));
+				message.reply('setVolume目前尚不可用...');
+				// console.log('setetvolume')
+				// player.set
+				// resource.volume.setVolume(0.5);
+				// connection.subscribe(player)
+				// if (queue !== undefined) queue.setVolume(Number(args[0]));
 				return ''
 			}
 			case 'pause': {
-				if (queue !== undefined) queue.setPaused(true);
+				console.log('暫停')
+				player.pause();
+				connection.subscribe(player);
 				return ''
 			}
 			case 'resume': {
-				if (queue !== undefined) queue.setPaused(false);
+				console.log('取消暫停')
+				player.pause(false)
+				connection.subscribe(player);
 				return ''
 			}
 			case 'search': {
