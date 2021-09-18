@@ -138,7 +138,6 @@ module.exports = {
 				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
 				
 				player.play(resource);
-				dispatcher = connection.subscribe(player);
 				return ''
 			}
 			case 'stop': {
@@ -160,7 +159,6 @@ module.exports = {
 			case 'pause': {
 				console.log('暫停')
 				player.pause();
-				dispatcher.pause()
 				connection.subscribe(player);
 				return ''
 			}
