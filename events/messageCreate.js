@@ -26,60 +26,96 @@ module.exports = {
 		const permissions = voiceChannel.permissionsFor(message.client.user)
 		if (!permissions.has('CONNECT')) return message.channel.send('你沒有權限執行此指令');
 		if (!permissions.has('SPEAK')) return message.channel.send('你沒有權限執行此指令');
-		
+
+		const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。'
 		
 		const videoFinder = async (keywords) => {
 			return await ytSearch(keywords);
 		}
 
+		const analysis = (dialogText, prefix, commandsAssembly) => {
+			const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。'
+			const dialogFragment = dialogText.split(' ');
+
+			// 輸入 $$ play afjkdjfld 這種有 $$ + 空白的錯誤指令格式
+			// ['$$', 'play', 'value', 'value2', 'value3']
+			if (dialogFragment[0] === prefix) {
+				message.reply(commandErrorMsg);
+				return false;
+			}
+
+			// 以下進入合法格式，開始檢查指令正確性
+			// ['$$xxx', 'fasdfasd', 'fasdf']
+			const prefixAndCommand = dialogFragment[0];
+			if (prefixAndCommand.indexOf(prefix) < 0) {
+				message.reply('請檢察指令是否以 $$ 開頭。');
+				return false;
+			}
+			
+			// 檢查指令是否於指令集內
+			const currentCmd = prefixAndCommand.split(prefix)[1];
+			if (commandsAssembly.indexOf(currentCmd) < 0) {
+				message.reply(commandErrorMsg);
+				return false;
+			}
+
+			dialogFragment.shift()
+			const queryValue = dialogFragment.join(' ');
+			return {
+				command: currentCmd,
+				queryValue
+			}
+		}
+
 		const prefix = '$$'
-		const args = message.content.slice(prefix.length).trim().split(/ +/g);
-		const command = args.shift();
-		// let guildQueue = client.player.getQueue(message.guild.id);
-
-		const secretTime = 10;
-
-		// console.info('guildQueue:', guildQueue);
-		// console.info('guildQueue:', guildQueue, '\n');
+		const secretTime   = 10;
+		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret']
+		const dialogText = message.content
 		
-		console.info('command:', command);
-		console.info('command:', command);
-
-		console.info('args:', args);
-		console.info('args:', args, '\n')
-		const query = args[0];
+		const result = analysis(dialogText, prefix, commands);
+		if (!result) return false;
+		const { command, queryValue } = result;
+		console.log('command:', command)
+		console.log('value:', queryValue)
+		
 		// const queue = client.player.createQueue(message.guild, {
 		// 	metadata: {
 		// 		channel: message.channel
 		// 	}
 		// });
-		const connection = joinVoiceChannel({
-			channelId: voiceChannel.id,
-			guildId: message.guild.id,
-			adapterCreator: message.guild.voiceAdapterCreator
+
+
+		const stream = ytdl(queryValue, { 
+			filter: 'audioonly',
+			quality: 'highestaudio',
+			highWaterMark: 1 << 25
 		});
-		const stream = ytdl(query, { filter: 'audioonly' });
+
 		const resource = createAudioResource(stream);
-		// resource.volume.setVolume(0.1)
 		const player = createAudioPlayer();
-		player.on(AudioPlayerStatus.Idle, (msg) => {
-			console.log('player msg::', msg)
-			connection.destroy()
+
+		player.once(AudioPlayerStatus.Idle, (msg) => {
+			console.log('player msg::', msg);
+			connection.destroy();
 		});
 		
-		player.on(AudioPlayerStatus.Playing, (msg) => {
+		player.once(AudioPlayerStatus.Playing, (msg) => {
 			console.log('The audio player has started playing!', msg);
 		});
-		player.on('error', error => {
+		player.once('error', error => {
 			console.error('Error:', error.message, 'with track', error.resource);
 		});
-		console.log(query)
 
 		switch (command) {
 			case 'join': {
 				connection.rejoin();
 			}
 			case 'play': {
+				const connection = joinVoiceChannel({
+					channelId: voiceChannel.id,
+					guildId: message.guild.id,
+					adapterCreator: message.guild.voiceAdapterCreator
+				});
 				// verify vc connection
 				// try {
 				// 	if (!queue.connection) await queue.connect(voiceChannel);
@@ -102,7 +138,7 @@ module.exports = {
 				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
 				
 				player.play(resource);
-				connection.subscribe(player);
+				dispatcher = connection.subscribe(player);
 				return ''
 			}
 			case 'stop': {
@@ -124,6 +160,7 @@ module.exports = {
 			case 'pause': {
 				console.log('暫停')
 				player.pause();
+				dispatcher.pause()
 				connection.subscribe(player);
 				return ''
 			}
@@ -140,10 +177,7 @@ module.exports = {
 
 				const videoResultLength = 5;
 				let videoResult = null
-				let keyWords = ''
-				for (let i = 0; i < args.length; i++) {
-					keyWords += args[i] + ' '
-				}
+				let keyWords = queryValue
 				keyWords = keyWords.trim();
 				videoResult = await videoFinder(keyWords);
 				const videos = videoResult.videos;
@@ -181,7 +215,7 @@ module.exports = {
 				return;
 			}
 			default:
-				return message.reply('指令有誤，請使用 /checkcmd 查看指令。')
+				return message.reply(commandErrorMsg)
 		}
 		return ''
 	}

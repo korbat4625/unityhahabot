@@ -114,6 +114,7 @@ const startRobot = async function (restart) {
 	// 	console.log('一手播放結束')
 	// 	console.log(track)
 	// })
+
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;
@@ -248,9 +249,6 @@ process.on('unhandledRejection', error => {
 
 try {
 	startRobot(false);
-	nodeCron.schedule('* 1 * * *', () => {
-		startRobot(false);
-	});
 } catch (err) {
 	console.error(err);
 	console.info('嘗試重啟機器人');
@@ -259,4 +257,19 @@ try {
 	startRobot(false);
 }
 
+// cron.schedule('5 * * * * *', () => {
+// 	console.log('每分鐘在第 5 秒執行一個任務')
+//   })
 
+const task = nodeCron.schedule('0 */3 * * * *', () => {
+	console.log('每3分鐘，重啟機器人')
+	startRobot(false);
+}, true)
+
+// console.log(task)
+task.start()
+
+process.on('uncaughtException', function(err) {
+	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟', err)
+	process.exit()
+});
