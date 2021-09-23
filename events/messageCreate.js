@@ -70,13 +70,7 @@ module.exports = {
 		console.log('command:', command)
 		console.log('value:', queryValue)
 
-
-		const prefix = '$$'
-		const args = message.content.slice(prefix.length).trim().split(/ +/g);
-		const command = args.shift();
 		let guildQueue = client.player.getQueue(message.guild.id);
-
-		const secretTime = 10;
 
 		console.info('guildQueue:', guildQueue);
 		console.info('guildQueue:', guildQueue, '\n');
@@ -84,8 +78,8 @@ module.exports = {
 		console.info('command:', command);
 		console.info('command:', command);
 
-		console.info('args:', args);
-		console.info('args:', args, '\n');
+		console.info('value:', queryValue);
+		console.info('value:', queryValue, '\n');
 		client.player.on('error', (err, queue) => {
 			console.log('撥放器發生錯誤222...')
 			console.log(err)
@@ -96,8 +90,7 @@ module.exports = {
 			case 'play': {
 				let queue = client.player.createQueue(message.guild.id);
 				await queue.join(message.member.voice.channel);
-				console.log(args.join(' '))
-				let song = await queue.play(args.join(' ')).catch(_ => {
+				let song = await queue.play(queryValue).catch(_ => {
 					console.info('播放途中錯誤')
 					console.error(_)
 					if(!guildQueue)  {
@@ -144,12 +137,7 @@ module.exports = {
 
 				const videoResultLength = 5;
 				let videoResult = null
-				let keyWords = ''
-				for (let i = 0; i < args.length; i++) {
-					keyWords += args[i] + ' '
-				}
-				keyWords = keyWords.trim();
-				videoResult = await videoFinder(keyWords);
+				videoResult = await videoFinder(queryValue);
 				const videos = videoResult.videos;
 				const sortedVideos = videos.sort((a, b) => {
 					return b.views -a.views
