@@ -25,6 +25,52 @@ module.exports = {
 			return await ytSearch(keywords);
 		}
 
+		const analysis = (dialogText, prefix, commandsAssembly) => {
+			const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。'
+			const dialogFragment = dialogText.split(' ');
+
+			// 輸入 $$ play afjkdjfld 這種有 $$ + 空白的錯誤指令格式
+			// ['$$', 'play', 'value', 'value2', 'value3']
+			if (dialogFragment[0] === prefix) {
+				message.reply(commandErrorMsg);
+				return false;
+			}
+
+			// 以下進入合法格式，開始檢查指令正確性
+			// ['$$xxx', 'fasdfasd', 'fasdf']
+			const prefixAndCommand = dialogFragment[0];
+			if (prefixAndCommand.indexOf(prefix) < 0) {
+				message.reply('請檢察指令是否以 $$ 開頭。');
+				return false;
+			}
+			
+			// 檢查指令是否於指令集內
+			const currentCmd = prefixAndCommand.split(prefix)[1];
+			if (commandsAssembly.indexOf(currentCmd) < 0) {
+				message.reply(commandErrorMsg);
+				return false;
+			}
+
+			dialogFragment.shift()
+			const queryValue = dialogFragment.join(' ');
+			return {
+				command: currentCmd,
+				queryValue
+			}
+		}
+
+		const prefix = '$$'
+		const secretTime   = 10;
+		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret']
+		const dialogText = message.content
+		
+		const result = analysis(dialogText, prefix, commands);
+		if (!result) return false;
+		const { command, queryValue } = result;
+		console.log('command:', command)
+		console.log('value:', queryValue)
+
+
 		const prefix = '$$'
 		const args = message.content.slice(prefix.length).trim().split(/ +/g);
 		const command = args.shift();
