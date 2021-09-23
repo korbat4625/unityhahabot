@@ -1,6 +1,8 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const nodeCron = require('node-cron');
+
 const register = require('./deploy-command');
 // Require the necessary discord.js classes
 
@@ -234,6 +236,17 @@ app.listen(port, () => {
 });
 
 
+process.on('uncaughtException', function (err) {
+	console.log(err);
+	process.exit(1)
+})
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+	process.exit(1)
+});
+
+
 try {
 	startRobot(false);
 } catch (err) {
@@ -243,5 +256,22 @@ try {
 	console.info('嘗試重啟機器人');
 	startRobot(false);
 }
+
+// cron.schedule('5 * * * * *', () => {
+// 	console.log('每分鐘在第 5 秒執行一個任務')
+//   })
+
+const task = nodeCron.schedule('0 */3 * * * *', () => {
+	console.log('每3分鐘，重啟機器人')
+	startRobot(false);
+}, true)
+
+// console.log(task)
+task.start()
+
+process.on('uncaughtException', function(err) {
+	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟', err)
+	process.exit()
+});
 
 
