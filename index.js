@@ -9,9 +9,6 @@ const register = require('./deploy-command');
 // const register = require('./deploy-command');
 // const { Player } = require("discord-player");
 
-// Require the necessary discord.js classes
-// const { Player } = require("discord-music-player");
-
 // discord.js
 const { Client, Collection, Intents } = require('discord.js');
 
@@ -63,56 +60,19 @@ const startRobot = async function (restart) {
 	bigClient = client;
 
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-	// const player = new Player(client, {
-	// 	leaveOnEmpty: false, // This options are optional.
-	// 	volume: 85
-	// });
-
-	// player.on('error', (err, queue) => {
-	// 	console.log('撥放器發生錯誤...')
-	// 	console.log(err)
-	// 	console.log(queue)
-	// 	if (typeof(err) !== 'object') {
-	// 		let targetCh;
-	// 		let buffer = [];
-	// 		const guildId = queue.guild.id;
-	// 		const channels = client.channels.cache;
-	// 		// console.log(channels)
-	// 		const code = err.split(' ')[2]
-	// 		const channelName = queue.connection.channel.name
-	// 		// console.log(channelName)
-	// 		const channelsPair = [...channels].filter(([id, ch]) => {
-	// 			return ch.name === channelName && ch.guildId === guildId
-	// 		})
-	// 		for (items of channelsPair) {
-	// 			for (item of items) {
-	// 				buffer.push(item)
-	// 			}
-	// 		}
-	// 		targetCh = buffer.filter(item => {
-	// 			return item?.type === 'GUILD_TEXT' && item.name === channelName
-	// 		})[0]
-	// 		console.log(targetCh)
-	// 		switch (code) {
-	// 			case '410':
-	// 				targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
-	// 				client.player.deleteQueue(queue.guild.id)
-	// 				break;
-	// 			default:
-	// 				console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
-	// 				targetCh.send('我也不知道...抱歉...反正撥不了，換換別首歌吧...');
-	// 				break;
-	// 		}
-	// 	}
-	// })
 
 	// Create a new Player (you don't need any API Key)
+	// 這裡是 discord-player version
 	// const player = new Player(client);
 	// client.player = player;
 	// client.player.on("trackStart", (queue, track) => queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`))
 	// client.player.on("trackEnd", (queue, track) => {
 	// 	console.log('一手播放結束')
 	// 	console.log(track)
+	// })
+	// client.player.on("error", (queue, err) => {
+	// 	console.log('queue err:::', queue)
+	// 	console.log('錯誤發生:::::::', err)
 	// })
 
 	client.token = token;
@@ -143,10 +103,12 @@ const startRobot = async function (restart) {
 			});
 			eventsNameArr.push(event.name)
 		} else if (event.name === 'messageCreate') {
-			client.on(event.name, (message) => {
-				event.execute(client, message);
-			});
-			eventsNameArr.push(event.name)
+			if (!isEventExist(eventsNameArr, event.name)) {
+				client.on(event.name, (message) => {
+					event.execute(client, message);
+				});
+				eventsNameArr.push(event.name)
+			}
 		} else {
 			// console.log('註冊了', event.name)
 			client.on(event.name, (...args) => event.execute(...args));

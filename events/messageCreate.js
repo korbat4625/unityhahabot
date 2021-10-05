@@ -6,6 +6,7 @@ const {
 	createAudioPlayer,
 	createAudioResource,
 	joinVoiceChannel,
+	getVoiceConnection
 } = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
 
@@ -13,6 +14,9 @@ module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message, callback) {
+		console.log('抓到訊息')
+		const prefix = '!!'
+		const onePrefix = '!'
 		// console.info('message guild id:::', message.guild.voiceAdapterCreator, '\n')
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
@@ -20,7 +24,7 @@ module.exports = {
 			return ''
 		}
 		if (message.type === 'REPLY') return ''
-		if (message.content[0] !== '$' && message.content[1] !== '$') return ''
+		if (message.content[0] !== onePrefix && message.content[1] !== onePrefix) return ''
 		if (!voiceChannel) return message.reply('請進入語音頻道，才能輸入指令! (指令以$$開頭)');
 
 		const permissions = voiceChannel.permissionsFor(message.client.user)
@@ -67,7 +71,7 @@ module.exports = {
 			}
 		}
 
-		const prefix = '$$'
+		
 		const secretTime   = 10;
 		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret']
 		const dialogText = message.content
@@ -75,15 +79,15 @@ module.exports = {
 		const result = analysis(dialogText, prefix, commands);
 		if (!result) return false;
 		const { command, queryValue } = result;
-		console.log('command:', command)
-		console.log('value:', queryValue)
-		
-		// const queue = client.player.createQueue(message.guild, {
-		// 	metadata: {
-		// 		channel: message.channel
-		// 	}
-		// });
 
+		/*
+		這裡是 discord-player 版本
+		const queue = client.player.createQueue(message.guild, {
+			metadata: {
+				channel: message.channel
+			}
+		});
+		*/
 
 		const stream = ytdl(queryValue, { 
 			filter: 'audioonly',
@@ -92,19 +96,6 @@ module.exports = {
 		});
 
 		const resource = createAudioResource(stream);
-		const player = createAudioPlayer();
-
-		player.once(AudioPlayerStatus.Idle, (msg) => {
-			console.log('player msg::', msg);
-			connection.destroy();
-		});
-		
-		player.once(AudioPlayerStatus.Playing, (msg) => {
-			console.log('The audio player has started playing!', msg);
-		});
-		player.once('error', error => {
-			console.error('Error:', error.message, 'with track', error.resource);
-		});
 
 		switch (command) {
 			case 'join': {
@@ -116,6 +107,11 @@ module.exports = {
 					guildId: message.guild.id,
 					adapterCreator: message.guild.voiceAdapterCreator
 				});
+				var player = createAudioPlayer();
+				client.player = player;
+				client.connection = connection;
+				/*
+				// 這裡是 discord-player 版本
 				// verify vc connection
 				// try {
 				// 	if (!queue.connection) await queue.connect(voiceChannel);
@@ -125,26 +121,36 @@ module.exports = {
 				// }
 		
 				// // await interaction.deferReply();
-				// const track = await client.player.search(query, {
+				// const track = await client.player.search(queryValue, {
 				// 	requestedBy: message.client.user
 				// }).then(x => {
 				// 	console.log(x)
 				// 	return x.tracks[0]
 				// });
 				// if (!track) return await message.reply({ content: `❌ | Track **${query}** not found!` });
-		
 				// queue.play(track);
-		
 				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
+				*/
 				
 				player.play(resource);
+				var sub = connection.subscribe(player);
+				client.subscribe = sub;
 				return ''
 			}
 			case 'stop': {
-				console.log('stop');
-				player.stop(true);
-				connection.subscribe(player);
-				connection.destroy();
+				// queue.stop();
+				// connection.subscribe(player);
+				// connection.destroy();
+				const connection = getVoiceConnection(voiceChannel.guild.id);
+				if (client.subscribe) {
+					console.log('有訂閱執行取消')
+					setTimeout(() => client.subscribe.unsubscribe(), 1);
+				}
+				try {
+					connection.destroy();
+				} catch (err) {
+					console.log(err);
+				}
 				return ''
 			}
 			case 'setVolume': {
@@ -157,15 +163,13 @@ module.exports = {
 				return ''
 			}
 			case 'pause': {
-				console.log('暫停')
-				player.pause();
-				connection.subscribe(player);
+				console.log('暫停');
+				if (client.player) client.player.pause();
 				return ''
 			}
 			case 'resume': {
-				console.log('取消暫停')
-				player.pause(false)
-				connection.subscribe(player);
+				console.log('取消暫停');
+				if (client.player) client.player.unpause();
 				return ''
 			}
 			case 'search': {
