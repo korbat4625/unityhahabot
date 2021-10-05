@@ -1,25 +1,37 @@
 const ytSearch = require('yt-search');
-// const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core');
+const {
+	AudioPlayerStatus,
+	StreamType,
+	createAudioPlayer,
+	createAudioResource,
+	joinVoiceChannel,
+	getVoiceConnection
+} = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message, callback) {
-		// console.info('message:::', message, '\n')
+		console.log('抓到訊息')
+		const prefix = '$$'
+		const onePrefix = '$'
+		// console.info('message guild id:::', message.guild.voiceAdapterCreator, '\n')
 		const voiceChannel = message.member.voice.channel
 		if (message.author.bot) {
 			console.warn('這是機器人觸發訊息!!!');
 			return ''
 		}
 		if (message.type === 'REPLY') return ''
-		if (message.content[0] !== '$' && message.content[1] !== '$') return ''
+		if (message.content[0] !== onePrefix && message.content[1] !== onePrefix) return ''
 		if (!voiceChannel) return message.reply('請進入語音頻道，才能輸入指令! (指令以$$開頭)');
 
 		const permissions = voiceChannel.permissionsFor(message.client.user)
 		if (!permissions.has('CONNECT')) return message.channel.send('你沒有權限執行此指令');
 		if (!permissions.has('SPEAK')) return message.channel.send('你沒有權限執行此指令');
-		
+
+		const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。'
 		
 		const videoFinder = async (keywords) => {
 			return await ytSearch(keywords);
@@ -59,7 +71,7 @@ module.exports = {
 			}
 		}
 
-		const prefix = '$$'
+		
 		const secretTime   = 10;
 		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret']
 		const dialogText = message.content
@@ -67,68 +79,98 @@ module.exports = {
 		const result = analysis(dialogText, prefix, commands);
 		if (!result) return false;
 		const { command, queryValue } = result;
-		console.log('command:', command)
-		console.log('value:', queryValue)
 
-		let guildQueue = client.player.getQueue(message.guild.id);
-
-		console.info('guildQueue:', guildQueue);
-		console.info('guildQueue:', guildQueue, '\n');
-		
-		console.info('command:', command);
-		console.info('command:', command);
-
-		console.info('value:', queryValue);
-		console.info('value:', queryValue, '\n');
-		client.player.on('error', (err, queue) => {
-			console.log('撥放器發生錯誤222...')
-			console.log(err)
-			console.log(queue)
-			
-		})
-		switch (command) {
-			case 'play': {
-				let queue = client.player.createQueue(message.guild.id);
-				await queue.join(message.member.voice.channel);
-				let song = await queue.play(queryValue).catch(_ => {
-					console.info('播放途中錯誤')
-					console.error(_)
-					if(!guildQueue)  {
-						queue.stop();
-						console.log('結束了撥放')
-						console.log('結束了撥放')
-						console.log('結束了撥放')
-					}
-					client.startRobot()
-					throw _
-				});
-
-				break;
+		/*
+		這裡是 discord-player 版本
+		const queue = client.player.createQueue(message.guild, {
+			metadata: {
+				channel: message.channel
 			}
-			case 'playlist': {
-				let queue = client.player.createQueue(message.guild.id);
-				await queue.join(message.member.voice.channel);
-				let song = await queue.playlist(args.join(' ')).catch(_ => {
-					if(!guildQueue) queue.stop();
+		});
+		*/
+
+		const stream = ytdl(queryValue, { 
+			filter: 'audioonly',
+			quality: 'highestaudio',
+			highWaterMark: 1 << 25
+		});
+
+		const resource = createAudioResource(stream);
+
+		switch (command) {
+			case 'join': {
+				connection.rejoin();
+			}
+			case 'play': {
+				const connection = joinVoiceChannel({
+					channelId: voiceChannel.id,
+					guildId: message.guild.id,
+					adapterCreator: message.guild.voiceAdapterCreator
 				});
-				break;
+				var player = createAudioPlayer();
+				client.player = player;
+				client.connection = connection;
+				/*
+				// 這裡是 discord-player 版本
+				// verify vc connection
+				// try {
+				// 	if (!queue.connection) await queue.connect(voiceChannel);
+				// } catch {
+				// 	queue.destroy();
+				// 	return await message.reply({ content: "Could not join your voice channel!", ephemeral: true });
+				// }
+		
+				// // await interaction.deferReply();
+				// const track = await client.player.search(queryValue, {
+				// 	requestedBy: message.client.user
+				// }).then(x => {
+				// 	console.log(x)
+				// 	return x.tracks[0]
+				// });
+				// if (!track) return await message.reply({ content: `❌ | Track **${query}** not found!` });
+				// queue.play(track);
+				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
+				*/
+				
+				player.play(resource);
+				var sub = connection.subscribe(player);
+				client.subscribe = sub;
+				return ''
 			}
 			case 'stop': {
-				// console.log(guildQueue)
-				if (guildQueue !== undefined) guildQueue.stop();
-				break;
+				// queue.stop();
+				// connection.subscribe(player);
+				// connection.destroy();
+				const connection = getVoiceConnection(voiceChannel.guild.id);
+				if (client.subscribe) {
+					console.log('有訂閱執行取消')
+					setTimeout(() => client.subscribe.unsubscribe(), 1);
+				}
+				try {
+					connection.destroy();
+				} catch (err) {
+					console.log(err);
+				}
+				return ''
 			}
 			case 'setVolume': {
-				if (guildQueue !== undefined) guildQueue.setVolume(parseInt(args[0]));
-				break;
+				message.reply('setVolume目前尚不可用...');
+				// console.log('setetvolume')
+				// player.set
+				// resource.volume.setVolume(0.5);
+				// connection.subscribe(player)
+				// if (queue !== undefined) queue.setVolume(Number(args[0]));
+				return ''
 			}
 			case 'pause': {
-				if (guildQueue !== undefined) guildQueue.setPaused(true);
-				break;
+				console.log('暫停');
+				if (client.player) client.player.pause();
+				return ''
 			}
 			case 'resume': {
-				if (guildQueue !== undefined) guildQueue.setPaused(false);
-				break;
+				console.log('取消暫停');
+				if (client.player) client.player.unpause();
+				return ''
 			}
 			case 'search': {
 				// console.info('進行搜尋');
@@ -137,7 +179,9 @@ module.exports = {
 
 				const videoResultLength = 5;
 				let videoResult = null
-				videoResult = await videoFinder(queryValue);
+				let keyWords = queryValue
+				keyWords = keyWords.trim();
+				videoResult = await videoFinder(keyWords);
 				const videos = videoResult.videos;
 				const sortedVideos = videos.sort((a, b) => {
 					return b.views -a.views
@@ -173,7 +217,7 @@ module.exports = {
 				return;
 			}
 			default:
-				return message.reply('指令有誤，請使用 /checkcmd 查看指令。')
+				return message.reply(commandErrorMsg)
 		}
 		return ''
 	}

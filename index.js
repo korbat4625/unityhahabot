@@ -1,18 +1,21 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const nodeCron = require('node-cron');
-
-const register = require('./deploy-command');
+const nodeCron = require("node-cron");
 // Require the necessary discord.js classes
 
-const { Player } = require("discord-music-player");
+const register = require('./deploy-command');
+// const { Player } = require("discord-music-player");
+// const register = require('./deploy-command');
+// const { Player } = require("discord-player");
+
+// discord.js
 const { Client, Collection, Intents } = require('discord.js');
 
 let bigClient = null;
 const token = process.env.HAHA_TOKEN;
 const clientId = process.env.CLIENT_ID;
-let guildsId = []
+let guildsId = [];
 const eventsNameArr = [];
 
 // express
@@ -28,10 +31,6 @@ process.on('unhandledRejection', error => {
 
 const startRobot = async (restart) => {
 	if (restart) {
-		// console.log('restartrestart')
-		// console.log(bigClient.guildsId)
-		// console.log(bigClient.clientId)
-		// await register(bigClient, false);
 		console.log('處理完畢重啟')
 		startRobot(false);
 		return ''
@@ -64,52 +63,25 @@ const startRobot = async (restart) => {
 		// With the key as the command name and the value as the exported module
 		client.commands.set(command.data.name, command);
 	}
+
 	bigClient = client;
 
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-	const player = new Player(client, {
-		leaveOnEmpty: false, // This options are optional.
-		volume: 85
-	});
 
-	player.on('error', (err, queue) => {
-		console.log('撥放器發生錯誤...')
-		console.log(err)
-		console.log(queue)
-		if (typeof(err) !== 'object') {
-			let targetCh;
-			let buffer = [];
-			const guildId = queue.guild.id;
-			const channels = client.channels.cache;
-			// console.log(channels)
-			const code = err.split(' ')[2]
-			const channelName = queue.connection.channel.name
-			// console.log(channelName)
-			const channelsPair = [...channels].filter(([id, ch]) => {
-				return ch.name === channelName && ch.guildId === guildId
-			})
-			for (items of channelsPair) {
-				for (item of items) {
-					buffer.push(item)
-				}
-			}
-			targetCh = buffer.filter(item => {
-				return item?.type === 'GUILD_TEXT' && item.name === channelName
-			})[0]
-			console.log(targetCh)
-			switch (code) {
-				case '410':
-					targetCh.send('YT可能不讓我播...不能怪我啊...換換別首歌吧...');
-					client.player.deleteQueue(queue.guild.id)
-					break;
-				default:
-					console.log('我也不知道...抱歉...反正撥不了，換換別首歌吧...' + code)
-					targetCh.send('我也不知道...抱歉...反正撥不了，換換別首歌吧...');
-					break;
-			}
-		}
-	})
-	client.player = player;
+	// Create a new Player (you don't need any API Key)
+	// 這裡是 discord-player version
+	// const player = new Player(client);
+	// client.player = player;
+	// client.player.on("trackStart", (queue, track) => queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`))
+	// client.player.on("trackEnd", (queue, track) => {
+	// 	console.log('一手播放結束')
+	// 	console.log(track)
+	// })
+	// client.player.on("error", (queue, err) => {
+	// 	console.log('queue err:::', queue)
+	// 	console.log('錯誤發生:::::::', err)
+	// })
+
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;
@@ -119,24 +91,24 @@ const startRobot = async (restart) => {
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				client.once(event.name, (...args) => {
-					event.execute(...args, (needToRegisteredInfo) => {
-						// console.log(needToRegisteredInfo)
-						guildsId = needToRegisteredInfo.guildsId
-						client.guildsId = guildsId;
-						bigClient = client;
-					});
+			client.once(event.name, (...args) => {
+				event.execute(...args, (needToRegisteredInfo) => {
+					// console.log(needToRegisteredInfo)
+					guildsId = needToRegisteredInfo.guildsId
+					client.guildsId = guildsId;
+					bigClient = client;
+					console.log('登入後的ID們')
+					console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
+					// tconsole.log('clien::::', client)
+					register(client, false)
 				});
-				eventsNameArr.push(event.name)
-			}
+			});
+			eventsNameArr.push(event.name)
 		} else if (event.name === 'interactionCreate') {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				client.on(event.name, (interaction) => {
-					event.execute(interaction, client);
-				});
-				eventsNameArr.push(event.name)
-			}
+			client.on(event.name, (interaction) => {
+				event.execute(interaction, client);
+			});
+			eventsNameArr.push(event.name)
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (message) => {
@@ -145,11 +117,9 @@ const startRobot = async (restart) => {
 				eventsNameArr.push(event.name)
 			}
 		} else {
-			if (!isEventExist(eventsNameArr, event.name)) {
-				// console.log('註冊了', event.name)
-				client.on(event.name, (...args) => event.execute(...args));
-				eventsNameArr.push(event.name)
-			}
+			// console.log('註冊了', event.name)
+			client.on(event.name, (...args) => event.execute(...args));
+			eventsNameArr.push(event.name)
 		}
 	}
 
@@ -235,6 +205,16 @@ app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
 });
 
+process.on('uncaughtException', function (err) {
+	console.log(err);
+	process.exit(1)
+})
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+	process.exit(1)
+});
+
 
 process.on('uncaughtException', function (err) {
 	console.log(err);
@@ -273,5 +253,3 @@ process.on('uncaughtException', function(err) {
 	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟', err)
 	process.exit()
 });
-
-
