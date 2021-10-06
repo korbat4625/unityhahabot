@@ -122,7 +122,6 @@ module.exports = {
 					adapterCreator: message.guild.voiceAdapterCreator
 				});
 				var player = createAudioPlayer();
-
 				/*
 				// 上個版本
 				client.player = player;
@@ -153,14 +152,14 @@ module.exports = {
 				*/
 				try {
 					console.log('嘗試撥放音樂...');
+					
 					player.play(resource);
 					var sub = connection.subscribe(player);
-
 					/* 
 					// 上個版本
 					client.subscribe = sub;
 					*/
-
+ 
 					// 新版本
 					const guildPlayer = {
 						guildId: message.guild.id,
@@ -169,6 +168,14 @@ module.exports = {
 						player,
 						sub
 					}
+					player.once(AudioPlayerStatus.Idle, () => {
+						try {
+							setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
+							guildPlayer.connection.destroy();
+						} catch (err) {
+							console.log(err);
+						}
+					})
 					guildsPlayer.push(guildPlayer)
 					//
 				} catch (err) {
