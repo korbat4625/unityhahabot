@@ -134,13 +134,13 @@ module.exports = {
 				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
 				*/
 				try {
+					console.log('嘗試撥放音樂...')
 					player.play(resource);
+					var sub = connection.subscribe(player);
+					client.subscribe = sub;
 				} catch (err) {
 					console.error('嘗試撥放過程發生錯誤:', err)
 				}
-				
-				var sub = connection.subscribe(player);
-				client.subscribe = sub;
 				return ''
 			}
 			case 'stop': {
