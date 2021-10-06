@@ -80,6 +80,8 @@ module.exports = {
 		if (!result) return false;
 		const { command, queryValue } = result;
 
+		console.log({ command, queryValue })
+
 		/*
 		這裡是 discord-player 版本
 		const queue = client.player.createQueue(message.guild, {
@@ -131,16 +133,17 @@ module.exports = {
 				// queue.play(track);
 				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
 				*/
+				try {
+					player.play(resource);
+				} catch (err) {
+					console.error('嘗試撥放過程發生錯誤:', err)
+				}
 				
-				player.play(resource);
 				var sub = connection.subscribe(player);
 				client.subscribe = sub;
 				return ''
 			}
 			case 'stop': {
-				// queue.stop();
-				// connection.subscribe(player);
-				// connection.destroy();
 				const connection = getVoiceConnection(voiceChannel.guild.id);
 				if (client.subscribe) {
 					console.log('有訂閱執行取消')
