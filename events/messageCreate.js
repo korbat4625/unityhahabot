@@ -9,6 +9,7 @@ const {
 	getVoiceConnection
 } = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
+const guildsPlayer = []
 
 module.exports = {
 	name: 'messageCreate',
@@ -101,7 +102,18 @@ module.exports = {
 
 		switch (command) {
 			case 'join': {
-				connection.rejoin();
+				// 新版本
+				try {
+					const connection = joinVoiceChannel({
+						channelId: voiceChannel.id,
+						guildId: message.guild.id,
+						adapterCreator: message.guild.voiceAdapterCreator
+					});
+				} catch (err) {
+					console.error(err)
+				}
+				return ''
+				//
 			}
 			case 'play': {
 				const connection = joinVoiceChannel({
@@ -110,8 +122,14 @@ module.exports = {
 					adapterCreator: message.guild.voiceAdapterCreator
 				});
 				var player = createAudioPlayer();
+
+				/*
+				// 上個版本
 				client.player = player;
 				client.connection = connection;
+				*/
+
+
 				/*
 				// 這裡是 discord-player 版本
 				// verify vc connection
@@ -134,21 +152,56 @@ module.exports = {
 				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
 				*/
 				try {
-					console.log('嘗試撥放音樂...')
+					console.log('嘗試撥放音樂...');
 					player.play(resource);
 					var sub = connection.subscribe(player);
+
+					/* 
+					// 上個版本
 					client.subscribe = sub;
+					*/
+
+					// 新版本
+					const guildPlayer = {
+						guildId: message.guild.id,
+						channelId: voiceChannel.id,
+						connection,
+						player,
+						sub
+					}
+					guildsPlayer.push(guildPlayer)
+					//
 				} catch (err) {
+					// 新版本
+					const playerIndex = guildsPlayer.findIndex(player => {
+						return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+					})
+					if (playerIndex) guildsPlayer.splice(playerIndex, 1)
+					//
 					console.error('嘗試撥放過程發生錯誤:', err)
 				}
 				return ''
 			}
 			case 'stop': {
 				const connection = getVoiceConnection(voiceChannel.guild.id);
-				if (client.subscribe) {
-					console.log('有訂閱執行取消')
-					setTimeout(() => client.subscribe.unsubscribe(), 1);
+				// 新版本
+				const thisPlayer = guildsPlayer.find(player => {
+					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+				})
+				if (thisPlayer) {
+					if (thisPlayer.sub) {
+						console.log('有訂閱執行取消')
+						setTimeout(() => thisPlayer.sub.unsubscribe(), 1);
+					}
 				}
+				//
+
+				// 上個版本
+				// if (client.subscribe) {
+				// 	console.log('有訂閱執行取消')
+				// 	setTimeout(() => client.subscribe.unsubscribe(), 1);
+				// }
+
 				try {
 					connection.destroy();
 				} catch (err) {
@@ -167,12 +220,18 @@ module.exports = {
 			}
 			case 'pause': {
 				console.log('暫停');
-				if (client.player) client.player.pause();
+				const thisPlayer = guildsPlayer.find(player => {
+					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+				})
+				if (thisPlayer.player) thisPlayer.player.pause();
 				return ''
 			}
 			case 'resume': {
 				console.log('取消暫停');
-				if (client.player) client.player.unpause();
+				const thisPlayer = guildsPlayer.find(player => {
+					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+				})
+				if (thisPlayer.player) thisPlayer.player.unpause();
 				return ''
 			}
 			case 'search': {
