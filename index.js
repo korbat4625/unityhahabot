@@ -100,7 +100,7 @@ const startRobot = async (restart) => {
 					console.log('登入後的ID們')
 					console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
 					// tconsole.log('clien::::', client)
-					register(client, false)
+					// register(client, false)
 				});
 			});
 			eventsNameArr.push(event.name)
