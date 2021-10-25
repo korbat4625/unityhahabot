@@ -244,7 +244,7 @@ module.exports = {
 			case 'search': {
 				// console.info('進行搜尋');
 				// console.info('進行搜尋');
-				// console.info('進行搜尋');
+				console.info('進行搜尋');
 
 				const videoResultLength = 5;
 				let videoResult = null
@@ -275,7 +275,7 @@ module.exports = {
 						.setTimestamp(sortedVideos[i].timestamp);
 					embeds.push(exampleEmbed)
 				}
-				// console.log('不該連續出現');
+				console.log({embeds});
 				message.reply({embeds});
 				break;
 			}
