@@ -94,24 +94,29 @@ const startRobot = async (restart) => {
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
 		if (event.once) {
-			client.once(event.name, (...args) => {
-				event.execute(...args, (needToRegisteredInfo) => {
-					// console.log(needToRegisteredInfo)
-					guildsId = needToRegisteredInfo.guildsId
-					client.guildsId = guildsId;
-					bigClient = client;
-					console.log('登入後的ID們')
-					console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
-					// tconsole.log('clien::::', client)
-					// register(client, false)
+			if (!isEventExist(eventsNameArr, event.name)) {
+				client.once(event.name, (...args) => {
+					event.execute(...args, (needToRegisteredInfo) => {
+						// console.log(needToRegisteredInfo)
+						guildsId = needToRegisteredInfo.guildsId
+						client.guildsId = guildsId;
+						bigClient = client;
+						console.log('登入後的ID們')
+						console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
+						// bigClient = client;
+						// tconsole.log('clien::::', client)
+						register(client, false)
+					});
 				});
-			});
-			eventsNameArr.push(event.name)
+				eventsNameArr.push(event.name)
+			}
 		} else if (event.name === 'interactionCreate') {
-			client.on(event.name, (interaction) => {
-				event.execute(interaction, client);
-			});
-			eventsNameArr.push(event.name)
+			if (!isEventExist(eventsNameArr, event.name)) {
+				client.on(event.name, (interaction) => {
+					event.execute(interaction, client);
+				});
+				eventsNameArr.push(event.name)
+			}
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (message) => {
@@ -120,9 +125,11 @@ const startRobot = async (restart) => {
 				eventsNameArr.push(event.name)
 			}
 		} else {
-			// console.log('註冊了', event.name)
-			client.on(event.name, (...args) => event.execute(...args));
-			eventsNameArr.push(event.name)
+			if (!isEventExist(eventsNameArr, event.name)) {
+				// console.log('註冊了', event.name)
+				client.on(event.name, (...args) => event.execute(...args));
+				eventsNameArr.push(event.name)
+			}
 		}
 	}
 
