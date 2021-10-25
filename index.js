@@ -253,6 +253,6 @@ const task = nodeCron.schedule('0 */3 * * * *', () => {
 task.start()
 
 process.on('uncaughtException', function(err) {
-	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟', err)
+	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟!!', err)
 	process.exit()
 });
