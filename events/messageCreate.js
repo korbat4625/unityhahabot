@@ -171,7 +171,8 @@ module.exports = {
 					player.once(AudioPlayerStatus.Idle, () => {
 						try {
 							setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
-							guildPlayer.connection.destroy();
+							if (guildPlayer.connection) guildPlayer.connection.destroy();
+							// guildPlayer.connection.destroy();
 						} catch (err) {
 							console.log(err);
 						}

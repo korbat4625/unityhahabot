@@ -105,7 +105,7 @@ const startRobot = async (restart) => {
 						console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
 						// bigClient = client;
 						// tconsole.log('clien::::', client)
-						register(client, false)
+						// register(client, false)
 					});
 				});
 				eventsNameArr.push(event.name)
