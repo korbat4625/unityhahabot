@@ -31,13 +31,13 @@ module.exports = async (client, single = false) => {
 		try {
 			if (single) {
 				console.log('註冊單一guild id:', client.currentNewGuildId)
-				await regis(client.currentNewGuildId);
+				regis(client.currentNewGuildId);
 				return ''
 			} else {
 				console.log('註冊多個guild id:')
 				for (let guildId of client.guildsId) {
 					console.log('送' + guildId + '進去')
-					await regis(guildId);
+					regis(guildId);
 				}
 				return ''
 			}

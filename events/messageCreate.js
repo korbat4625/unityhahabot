@@ -211,7 +211,7 @@ module.exports = {
 				// }
 
 				try {
-					connection.destroy();
+					if (connection) connection.destroy();
 				} catch (err) {
 					console.log(err);
 				}
