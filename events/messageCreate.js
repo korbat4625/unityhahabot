@@ -178,13 +178,17 @@ module.exports = {
 						}
 					})
 					guildsPlayer.push(guildPlayer)
+					callback(guildsPlayer)
 					//
 				} catch (err) {
 					// 新版本
 					const playerIndex = guildsPlayer.findIndex(player => {
 						return player.guildId === message.guild.id && player.channelId === voiceChannel.id
 					})
-					if (playerIndex) guildsPlayer.splice(playerIndex, 1)
+					if (playerIndex !== -1) {
+						guildsPlayer.splice(playerIndex, 1)
+						callback(guildsPlayer)
+					}
 					//
 					console.error('嘗試撥放過程發生錯誤:', err)
 				}
@@ -196,10 +200,19 @@ module.exports = {
 				const thisPlayer = guildsPlayer.find(player => {
 					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
 				})
+				const playerIndex = guildsPlayer.findIndex(player => {
+					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+				})
 				if (thisPlayer) {
 					if (thisPlayer.sub) {
 						console.log('有訂閱執行取消')
-						setTimeout(() => thisPlayer.sub.unsubscribe(), 1);
+						setTimeout(() => {
+							thisPlayer.sub.unsubscribe()
+							if (playerIndex !== -1) {
+								guildsPlayer.splice(playerIndex, 1)
+								callback(guildsPlayer)
+							}
+						}, 1);
 					}
 				}
 				//

@@ -26,6 +26,8 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
+const playlistTasks = []
+
 process.on('unhandledRejection', error => {
   console.error('unhandledRejection');
   console.error(error)
@@ -120,7 +122,9 @@ const startRobot = async (restart) => {
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (message) => {
-					event.execute(client, message);
+					event.execute(client, message, function (guildsPlayerTasks) {
+						playlistTasks = guildsPlayerTasks
+					});
 				});
 				eventsNameArr.push(event.name)
 			}
@@ -251,9 +255,19 @@ try {
 // 	console.log('每分鐘在第 5 秒執行一個任務')
 //   })
 
-const task = nodeCron.schedule('0 */3 * * * *', () => {
-	console.log('每3分鐘，重啟機器人')
-	startRobot(false);
+let count = 1
+const task = nodeCron.schedule('0 */5 * * * *', () => {
+	if (count % 2 === 0) {
+		console.log('10分鐘強制重啟')
+		startRobot(false);
+	}
+	if (playlistTasks.length !== 0) {
+		console.log('偵測到還有播放任務，因此不重啟')
+		count++;
+	} else {
+		console.log('沒有播放任務，正常重啟')
+		startRobot(false);
+	}
 }, true)
 
 // console.log(task)
