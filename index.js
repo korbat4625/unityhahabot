@@ -26,7 +26,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
-const playlistTasks = []
+let playlistTasks = []
 
 process.on('unhandledRejection', error => {
   console.error('unhandledRejection');
@@ -124,6 +124,8 @@ const startRobot = async (restart) => {
 				client.on(event.name, (message) => {
 					event.execute(client, message, function (guildsPlayerTasks) {
 						playlistTasks = guildsPlayerTasks
+						console.log('查看現有task:::')
+						console.log(guildsPlayerTasks)
 					});
 				});
 				eventsNameArr.push(event.name)

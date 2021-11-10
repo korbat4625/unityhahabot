@@ -172,6 +172,13 @@ module.exports = {
 						try {
 							setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
 							if (guildPlayer.connection) guildPlayer.connection.destroy();
+							const playerIndex = guildsPlayer.findIndex(player => {
+								return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+							})
+							if (playerIndex !== -1) {
+								guildsPlayer.splice(playerIndex, 1)
+								callback(guildsPlayer)
+							}
 							// guildPlayer.connection.destroy();
 						} catch (err) {
 							console.log(err);
