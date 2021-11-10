@@ -29,7 +29,7 @@ const port = process.env.PORT || 5000;
 let playlistTasks = []
 
 process.on('unhandledRejection', error => {
-  console.error('unhandledRejection');
+  console.error('unhandledRejection:::');
   console.error(error)
   process.exit(1) // To exit with a 'failure' code
 });
@@ -125,6 +125,7 @@ const startRobot = async (restart) => {
 					event.execute(client, message, function (guildsPlayerTasks) {
 						playlistTasks = guildsPlayerTasks
 						console.log('查看現有task:::')
+						console.log(`有${guildsPlayerTasks.length}個task`)
 						console.log(guildsPlayerTasks)
 					});
 				});
@@ -222,6 +223,7 @@ app.listen(port, () => {
 });
 
 process.on('uncaughtException', function (err) {
+	console.log('uncaughtException:::')
 	console.log(err);
 	process.exit(1)
 })
