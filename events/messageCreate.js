@@ -181,6 +181,7 @@ module.exports = {
 							}
 							// guildPlayer.connection.destroy();
 						} catch (err) {
+							console.log('idle event err trigger:::')
 							console.log(err);
 						}
 					})
