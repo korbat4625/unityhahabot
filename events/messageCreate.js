@@ -75,6 +75,8 @@ module.exports = {
 		
 		const secretTime   = 10;
 		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret']
+		
+		message.content = message.content.replace(/\s\s+/g, ' ');
 		const dialogText = message.content
 		
 		const result = analysis(dialogText, prefix, commands);
