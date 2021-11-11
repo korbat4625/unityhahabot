@@ -40,7 +40,7 @@ const startRobot = async (restart) => {
 		startRobot(false);
 		return ''
 	}
-	console.log('程序以重啟')
+	console.log('程序以重啟...')
 	console.log('開始start流程')
 	// await register();
 	const isEventExist = (eventsArray = [], eventName) => {
