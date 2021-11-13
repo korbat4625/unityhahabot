@@ -187,6 +187,12 @@ module.exports = {
 							console.log(err);
 						}
 					})
+
+					const prevTaskIndex
+						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId)
+					if (prevTaskIndex >= 0) {
+						guildsPlayer.splice(prevTaskIndex, 1)
+					}
 					guildsPlayer.push(guildPlayer)
 					callback(guildsPlayer)
 					//
