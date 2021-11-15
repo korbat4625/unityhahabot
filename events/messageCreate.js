@@ -121,6 +121,14 @@ module.exports = {
 				//
 			}
 			case 'play': {
+				const prevTaskIndex
+						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId)
+				if (prevTaskIndex >= 0) {
+					console.log('連續撥放，找到有prev，先消除prev')
+					guildsPlayer[prevTaskIndex].sub.unsubscribe()
+					guildsPlayer.splice(prevTaskIndex, 1)
+				}
+
 				const connection = joinVoiceChannel({
 					channelId: voiceChannel.id,
 					guildId: message.guild.id,
@@ -190,12 +198,7 @@ module.exports = {
 							console.log(err);
 						}
 					})
-
-					const prevTaskIndex
-						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId)
-					if (prevTaskIndex >= 0) {
-						guildsPlayer.splice(prevTaskIndex, 1)
-					}
+					
 					guildsPlayer.push(guildPlayer)
 					callback(guildsPlayer)
 					//
