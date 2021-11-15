@@ -16,6 +16,7 @@ module.exports = {
 	once: false,
 	async execute(client, message, callback) {
 		console.log('抓到訊息')
+		console.log('抓到訊息::', message)
 		const prefix = '$$'
 		const onePrefix = '$'
 		// console.info('message guild id:::', message.guild.voiceAdapterCreator, '\n')

@@ -233,18 +233,6 @@ process.on('unhandledRejection', error => {
 	process.exit(1)
 });
 
-
-process.on('uncaughtException', function (err) {
-	console.log(err);
-	process.exit(1)
-})
-
-process.on('unhandledRejection', error => {
-	console.error('Unhandled promise rejection:', error);
-	process.exit(1)
-});
-
-
 try {
 	startRobot(false);
 } catch (err) {
@@ -261,6 +249,7 @@ try {
 
 let count = 1
 const task = nodeCron.schedule('0 */5 * * * *', () => {
+	console.log('查看events arr', eventsNameArr)
 	if (count % 2 === 0) {
 		console.log('10分鐘強制重啟')
 		startRobot(false);
