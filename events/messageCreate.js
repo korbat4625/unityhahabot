@@ -18,24 +18,24 @@ module.exports = {
 		console.log('抓到訊息，訊息本體是::',  message)
 		console.log('抓到訊息，訊息是::',  message.content)
 		console.log('是否是機器人:::', message.author.bot, '\n\n')
+		if (message.author.bot) {
+			console.log('這是機器人觸發訊息!!!');
+			return '';
+		}
 
 		const prefix = '$$'
 		const onePrefix = '$'
 		// console.info('message guild id:::', message.guild.voiceAdapterCreator, '\n')
 		const voiceChannel = message.member.voice.channel
-		if (message.author.bot) {
-			console.warn('這是機器人觸發訊息!!!');
-			return ''
-		}
-		if (message.type === 'REPLY') return ''
-		if (message.content[0] !== onePrefix && message.content[1] !== onePrefix) return ''
+		if (message.type === 'REPLY') return '';
+		if (message.content[0] !== onePrefix && message.content[1] !== onePrefix) return '';
 		if (!voiceChannel) return message.reply('請進入語音頻道，才能輸入指令! (指令以$$開頭)');
 
-		const permissions = voiceChannel.permissionsFor(message.client.user)
+		const permissions = voiceChannel.permissionsFor(message.client.user);
 		if (!permissions.has('CONNECT')) return message.channel.send('你沒有權限執行此指令');
 		if (!permissions.has('SPEAK')) return message.channel.send('你沒有權限執行此指令');
 
-		const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。'
+		const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。';
 		
 		const videoFinder = async (keywords) => {
 			return await ytSearch(keywords);
