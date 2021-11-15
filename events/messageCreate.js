@@ -121,14 +121,6 @@ module.exports = {
 				//
 			}
 			case 'play': {
-				const prevTaskIndex
-						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId)
-				if (prevTaskIndex >= 0) {
-					console.log('連續撥放，找到有prev，先消除prev')
-					guildsPlayer[prevTaskIndex].sub.unsubscribe()
-					guildsPlayer.splice(prevTaskIndex, 1)
-				}
-
 				const connection = joinVoiceChannel({
 					channelId: voiceChannel.id,
 					guildId: message.guild.id,
@@ -181,6 +173,15 @@ module.exports = {
 						player,
 						sub
 					}
+					
+					const prevTaskIndex
+						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId)
+					if (prevTaskIndex >= 0) {
+						console.log('連續撥放，找到有prev，先消除prev')
+						guildsPlayer[prevTaskIndex].sub.unsubscribe()
+						guildsPlayer.splice(prevTaskIndex, 1)
+					}
+
 					player.once(AudioPlayerStatus.Idle, () => {
 						try {
 							setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
