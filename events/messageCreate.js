@@ -15,7 +15,7 @@ module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message, callback) {
-		console.log('抓到訊息，訊息本體是::',  message)
+		// console.log('抓到訊息，訊息本體是::',  message)
 		console.log('抓到訊息，訊息是::',  message.content)
 		console.log('是否是機器人:::', message.author.bot, '\n\n')
 		if (message.author.bot) {
