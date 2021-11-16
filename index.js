@@ -26,17 +26,10 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
-let playlistTasks = []
-
-process.on('unhandledRejection', error => {
-  console.error('unhandledRejection:::');
-  console.error(error)
-  process.exit(1) // To exit with a 'failure' code
-});
-
+let playlistTasks = [];
 const startRobot = async (restart) => {
 	if (restart) {
-		console.log('處理完畢重啟')
+		console.log('處理完畢重啟');
 		startRobot(false);
 		return ''
 	}
@@ -74,9 +67,9 @@ const startRobot = async (restart) => {
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 
 	client.token = token;
-	client.clientId = clientId
+	client.clientId = clientId;
 	client.guildsId = guildsId;
-	client.startRobot = startRobot
+	client.startRobot = startRobot;
 
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
@@ -85,38 +78,38 @@ const startRobot = async (restart) => {
 				client.once(event.name, (...args) => {
 					event.execute(...args, (needToRegisteredInfo) => {
 						// console.log(needToRegisteredInfo)
-						guildsId = needToRegisteredInfo.guildsId
+						guildsId = needToRegisteredInfo.guildsId;
 						client.guildsId = guildsId;
-						console.log('登入後的ID們')
-						console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
+						console.log('登入後的ID們');
+						console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId);
 					});
 				});
-				eventsNameArr.push(event.name)
+				eventsNameArr.push(event.name);
 			}
 		} else if (event.name === 'interactionCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (interaction) => {
 					event.execute(interaction, client);
 				});
-				eventsNameArr.push(event.name)
+				eventsNameArr.push(event.name);
 			}
 		} else if (event.name === 'messageCreate') {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				client.on(event.name, (message) => {
 					event.execute(client, message, function (guildsPlayerTasks) {
-						playlistTasks = guildsPlayerTasks
-						console.log('查看現有task:::')
-						console.log(`有${guildsPlayerTasks.length}個task`)
-						console.log(guildsPlayerTasks)
+						playlistTasks = guildsPlayerTasks;
+						console.log('查看現有task:::');
+						console.log(`有${guildsPlayerTasks.length}個task`);
+						console.log(guildsPlayerTasks);
 					});
 				});
-				eventsNameArr.push(event.name)
+				eventsNameArr.push(event.name);
 			}
 		} else {
 			if (!isEventExist(eventsNameArr, event.name)) {
 				// console.log('註冊了', event.name)
 				client.on(event.name, (...args) => event.execute(...args));
-				eventsNameArr.push(event.name)
+				eventsNameArr.push(event.name);
 			}
 		}
 	}
@@ -172,7 +165,7 @@ app.get('/restartbot', async (req, res) => {
 app.get('/deployCmd', async (req, res) => {
 	try {
 		register(bigClient, false);
-		res.status(200)
+		res.status(200);
 		res.render('successRes');
 	} catch (err) {
 		res.status(500);
@@ -181,7 +174,7 @@ app.get('/deployCmd', async (req, res) => {
 })
 
 app.get('*', function(req, res) {
-	res.render('404')
+	res.render('404');
 });
 
 // err handling
@@ -194,27 +187,27 @@ app.use(function (err, req, res, next) {
 	console.log('發發發發發生了錯誤!');
 	console.error(err);
 	// render the error page
-	res.status(err.status || 500)
+	res.status(err.status || 500);
 	res.render('err', {
 		err
 	});
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`)
+	console.log(`Example app listening at http://localhost:${port}`);
 });
 
 process.on('uncaughtException', function(err) {
-	console.log('uncaughtException:::')
-	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟!!', err)
-	process.exit(1)
+	console.log('uncaughtException:::', err);
+	process.exit(1);
 });
 
 
 process.on('unhandledRejection', error => {
-	console.error('Unhandled promise rejection:', error);
-	process.exit(1)
-});
+	console.error('unhandledRejection:::');
+	console.error(error);
+	process.exit(1); // To exit with a 'failure' code
+});  
 
 try {
 	startRobot(false);
@@ -230,19 +223,20 @@ try {
 // 	console.log('每分鐘在第 5 秒執行一個任務')
 //   })
 
-let count = 1
+let count = 1;
 const task = nodeCron.schedule('0 */5 * * * *', () => {
-	console.log('查看events arr', eventsNameArr)
+	console.log('查看events arr', eventsNameArr);
 	if (count % 2 === 0) {
-		console.log('10分鐘強制重啟')
+		console.log('10分鐘強制重啟');
 		startRobot(false);
-		return ''
+		count = 0;
+		return '';
 	}
 	if (playlistTasks.length !== 0) {
-		console.log('偵測到還有播放任務，因此不重啟')
+		console.log('偵測到還有播放任務，因此不重啟');
 		count++;
 	} else {
-		console.log('沒有播放任務，正常重啟')
+		console.log('沒有播放任務，正常重啟');
 		startRobot(false);
 	}
 }, true)

@@ -9,25 +9,25 @@ const {
 	getVoiceConnection
 } = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
-const guildsPlayer = []
+const guildsPlayer = [];
 
 module.exports = {
 	name: 'messageCreate',
 	once: false,
 	async execute(client, message, callback) {
 		// console.log('抓到訊息，訊息本體是::',  message)
-		console.log('抓到訊息，訊息觸發時間::', new Date(), '\n\n')
-		console.log('抓到訊息，訊息是::',  message.content, '\n\n')
-		console.log('是否是機器人:::', message.author.bot, '\n\n')
+		console.log('抓到訊息，訊息觸發時間::', new Date(), '\n\n');
+		console.log('抓到訊息，訊息是::',  message.content, '\n\n');
+		console.log('是否是機器人:::', message.author.bot, '\n\n');
 		if (message.author.bot) {
 			console.log('這是機器人觸發訊息!!!');
 			return '';
 		}
 
-		const prefix = '$$'
-		const onePrefix = '$'
+		const prefix = '$$';
+		const onePrefix = '$';
 		// console.info('message guild id:::', message.guild.voiceAdapterCreator, '\n')
-		const voiceChannel = message.member.voice.channel
+		const voiceChannel = message.member.voice.channel;
 		if (message.type === 'REPLY') return '';
 		if (message.content[0] !== onePrefix && message.content[1] !== onePrefix) return '';
 		if (!voiceChannel) return message.reply('請進入語音頻道，才能輸入指令! (指令以$$開頭)');
@@ -43,7 +43,7 @@ module.exports = {
 		}
 
 		const analysis = (dialogText, prefix, commandsAssembly) => {
-			const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。'
+			const commandErrorMsg = '指令有誤，請在對話框輸入 /checkcmd 查看可用指令和格式 (注意空白)。';
 			const dialogFragment = dialogText.split(' ');
 
 			// 輸入 $$ play afjkdjfld 這種有 $$ + 空白的錯誤指令格式
@@ -78,16 +78,16 @@ module.exports = {
 
 		
 		const secretTime   = 10;
-		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret']
+		const commands = ['play', 'stop', 'pause', 'resume', 'setVolume', 'join', 'search', 'secret'];
 		
 		message.content = message.content.replace(/\s\s+/g, ' ');
-		const dialogText = message.content
+		const dialogText = message.content;
 		
 		const result = analysis(dialogText, prefix, commands);
 		if (!result) return false;
 		const { command, queryValue } = result;
 
-		console.log({ command, queryValue })
+		console.log({ command, queryValue });
 
 		/*
 		這裡是 discord-player 版本
@@ -108,7 +108,7 @@ module.exports = {
 						adapterCreator: message.guild.voiceAdapterCreator
 					});
 				} catch (err) {
-					console.error(err)
+					console.error(err);
 				}
 				return ''
 				//
@@ -177,7 +177,7 @@ module.exports = {
 							})
 							if (playerIndex !== -1) {
 								guildsPlayer.splice(playerIndex, 1)
-								callback(guildsPlayer)
+								callback(guildsPlayer);
 							}
 							// guildPlayer.connection.destroy();
 						} catch (err) {
@@ -186,8 +186,8 @@ module.exports = {
 						}
 					})
 					
-					guildsPlayer.push(guildPlayer)
-					callback(guildsPlayer)
+					guildsPlayer.push(guildPlayer);
+					callback(guildsPlayer);
 					//
 				} catch (err) {
 					// 新版本
@@ -195,11 +195,11 @@ module.exports = {
 						return player.guildId === message.guild.id && player.channelId === voiceChannel.id
 					})
 					if (playerIndex !== -1) {
-						guildsPlayer.splice(playerIndex, 1)
-						callback(guildsPlayer)
+						guildsPlayer.splice(playerIndex, 1);
+						callback(guildsPlayer);
 					}
 					//
-					console.error('嘗試撥放過程發生錯誤:', err)
+					console.error('嘗試撥放過程發生錯誤:', err);
 				}
 				return ''
 			}
@@ -208,10 +208,10 @@ module.exports = {
 				// 新版本
 				const thisPlayer = guildsPlayer.find(player => {
 					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
-				})
+				});
 				const playerIndex = guildsPlayer.findIndex(player => {
 					return player.guildId === message.guild.id && player.channelId === voiceChannel.id
-				})
+				});
 				if (thisPlayer) {
 					if (thisPlayer.sub) {
 						console.log('有訂閱執行取消')
