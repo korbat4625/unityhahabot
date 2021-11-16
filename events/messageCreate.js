@@ -146,7 +146,7 @@ module.exports = {
 						quality: 'highestaudio',
 						highWaterMark: 1 << 25
 					}); 
-					guildPlayer.resource = createAudioResource(stream);
+					guildPlayer.resource = createAudioResource(guildPlayer.stream);
 					guildPlayer.connection = joinVoiceChannel({
 						channelId: voiceChannel.id,
 						guildId: message.guild.id,
