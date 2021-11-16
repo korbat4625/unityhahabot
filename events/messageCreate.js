@@ -16,7 +16,8 @@ module.exports = {
 	once: false,
 	async execute(client, message, callback) {
 		// console.log('抓到訊息，訊息本體是::',  message)
-		console.log('抓到訊息，訊息是::',  message.content)
+		console.log('抓到訊息，訊息觸發時間::', new Date(), '\n\n')
+		console.log('抓到訊息，訊息是::',  message.content, '\n\n')
 		console.log('是否是機器人:::', message.author.bot, '\n\n')
 		if (message.author.bot) {
 			console.log('這是機器人觸發訊息!!!');
@@ -101,7 +102,9 @@ module.exports = {
 			filter: 'audioonly',
 			quality: 'highestaudio',
 			highWaterMark: 1 << 25
-		});
+		}).once('error', function (error) {
+			console.log(error)
+		})
 
 		const resource = createAudioResource(stream);
 
