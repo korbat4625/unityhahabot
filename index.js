@@ -69,29 +69,14 @@ const startRobot = async (restart) => {
 		client.commands.set(command.data.name, command);
 	}
 
-	bigClient = client;
+	
 
 	const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-
-	// Create a new Player (you don't need any API Key)
-	// 這裡是 discord-player version
-	// const player = new Player(client);
-	// client.player = player;
-	// client.player.on("trackStart", (queue, track) => queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`))
-	// client.player.on("trackEnd", (queue, track) => {
-	// 	console.log('一手播放結束')
-	// 	console.log(track)
-	// })
-	// client.player.on("error", (queue, err) => {
-	// 	console.log('queue err:::', queue)
-	// 	console.log('錯誤發生:::::::', err)
-	// })
 
 	client.token = token;
 	client.clientId = clientId
 	client.guildsId = guildsId;
 	client.startRobot = startRobot
-	bigClient = client;
 
 	for (const file of eventFiles) {
 		const event = require(`./events/${file}`);
@@ -102,12 +87,8 @@ const startRobot = async (restart) => {
 						// console.log(needToRegisteredInfo)
 						guildsId = needToRegisteredInfo.guildsId
 						client.guildsId = guildsId;
-						bigClient = client;
 						console.log('登入後的ID們')
 						console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId)
-						// bigClient = client;
-						// tconsole.log('clien::::', client)
-						// register(client, false)
 					});
 				});
 				eventsNameArr.push(event.name)
@@ -157,6 +138,7 @@ const startRobot = async (restart) => {
 
 	// Login to Discord with your client's token
 	await client.login(token);
+	bigClient = client;
 	// console.log(client.guilds.cache)
 }
 
@@ -207,9 +189,9 @@ app.use(function (err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
-	console.info('發發發發發生了錯誤!');
-	console.info('發發發發發生了錯誤!');
-	console.info('發發發發發生了錯誤!');
+	console.log('發發發發發生了錯誤!');
+	console.log('發發發發發生了錯誤!');
+	console.log('發發發發發生了錯誤!');
 	console.error(err);
 	// render the error page
 	res.status(err.status || 500)
@@ -222,11 +204,12 @@ app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
 });
 
-process.on('uncaughtException', function (err) {
+process.on('uncaughtException', function(err) {
 	console.log('uncaughtException:::')
-	console.log(err);
+	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟!!', err)
 	process.exit(1)
-})
+});
+
 
 process.on('unhandledRejection', error => {
 	console.error('Unhandled promise rejection:', error);
@@ -266,8 +249,3 @@ const task = nodeCron.schedule('0 */5 * * * *', () => {
 
 // console.log(task)
 task.start()
-
-process.on('uncaughtException', function(err) {
-	console.log('發生沒處理到的錯誤，將結束城市並由pm2重啟!!', err)
-	process.exit()
-});

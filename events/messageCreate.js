@@ -97,14 +97,6 @@ module.exports = {
 		});
 		*/
 
-		const stream = ytdl(queryValue, { 
-			filter: 'audioonly',
-			quality: 'highestaudio',
-			highWaterMark: 1 << 25
-		});
-
-		const resource = createAudioResource(stream);
-
 		switch (command) {
 			case 'join': {
 				// 新版本
@@ -121,68 +113,61 @@ module.exports = {
 				//
 			}
 			case 'play': {
-				const connection = joinVoiceChannel({
-					channelId: voiceChannel.id,
-					guildId: message.guild.id,
-					adapterCreator: message.guild.voiceAdapterCreator
-				});
-				var player = createAudioPlayer();
-				/*
-				// 上個版本
-				client.player = player;
-				client.connection = connection;
-				*/
-
-
-				/*
-				// 這裡是 discord-player 版本
-				// verify vc connection
-				// try {
-				// 	if (!queue.connection) await queue.connect(voiceChannel);
-				// } catch {
-				// 	queue.destroy();
-				// 	return await message.reply({ content: "Could not join your voice channel!", ephemeral: true });
-				// }
-		
-				// // await interaction.deferReply();
-				// const track = await client.player.search(queryValue, {
-				// 	requestedBy: message.client.user
-				// }).then(x => {
-				// 	console.log(x)
-				// 	return x.tracks[0]
-				// });
-				// if (!track) return await message.reply({ content: `❌ | Track **${query}** not found!` });
-				// queue.play(track);
-				// return await message.reply({ content: `⏱️ | Loading track **${track.title}**!` });
-				*/
 				try {
-					console.log('嘗試撥放音樂...');
-					
-					player.play(resource);
-					var sub = connection.subscribe(player);
-					/* 
-					// 上個版本
-					client.subscribe = sub;
-					*/
- 
-					// 新版本
+					// const stream = ytdl(queryValue, { 
+					// 	filter: 'audioonly',
+					// 	quality: 'highestaudio',
+					// 	highWaterMark: 1 << 25
+					// });
+			
+					// const resource = createAudioResource(stream);
 					const guildPlayer = {
 						guildId: message.guild.id,
 						channelId: voiceChannel.id,
-						connection,
-						player,
-						sub
-					}
-					
+						stream: null,
+						resource: null,
+						connection: null,
+						player: null,
+						sub: null
+					};
+
 					const prevTaskIndex
-						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId)
+						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId);
 					if (prevTaskIndex >= 0) {
-						console.log('連續撥放，找到有prev，先消除prev')
-						guildsPlayer[prevTaskIndex].sub.unsubscribe()
-						guildsPlayer.splice(prevTaskIndex, 1)
+						console.log('連續撥放，找到有prev，先消除prev');
+						guildsPlayer[prevTaskIndex].sub.unsubscribe();
+						guildsPlayer[prevTaskIndex].player.stop();
+						guildsPlayer.splice(prevTaskIndex, 1);
 					}
 
-					player.once(AudioPlayerStatus.Idle, () => {
+					guildPlayer.stream = ytdl(queryValue, { 
+						filter: 'audioonly',
+						quality: 'highestaudio',
+						highWaterMark: 1 << 25
+					}); 
+					guildPlayer.resource = createAudioResource(stream);
+					guildPlayer.connection = joinVoiceChannel({
+						channelId: voiceChannel.id,
+						guildId: message.guild.id,
+						adapterCreator: message.guild.voiceAdapterCreator
+					});
+					guildPlayer.player = createAudioPlayer();
+					guildPlayer.player.play(guildPlayer.resource);
+					guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
+
+					// 這段要查是不是有stream的error可以利用
+					// const funcao = stream.listeners('error')[2];
+					// stream.removeListener('error', funcao);
+					// stream.on('error', (err) => {
+					// 	try {
+					// 		throw new Error();
+					// 	} catch {
+					// 		stream.destroy();
+					// 		console.log(err);
+					// 	}
+					// });
+
+					guildPlayer.player.once(AudioPlayerStatus.Idle, () => {
 						try {
 							setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
 							if (guildPlayer.connection) guildPlayer.connection.destroy();
@@ -195,7 +180,7 @@ module.exports = {
 							}
 							// guildPlayer.connection.destroy();
 						} catch (err) {
-							console.log('idle event err trigger:::')
+							console.log('idle event err trigger:::');
 							console.log(err);
 						}
 					})
