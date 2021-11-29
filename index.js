@@ -198,7 +198,7 @@ app.listen(port, () => {
 });
 
 process.on('uncaughtException', function(err) {
-	console.log('uncaughtException:::', err);
+	console.log('uncaughtException:', err);
 	process.exit(1);
 });
 
