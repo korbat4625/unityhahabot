@@ -120,6 +120,50 @@ module.exports = {
 						guildPlayer.player.play(guildPlayer.resource);
 						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
 					}
+					const listenErr = function (guildPlayer) {
+						guildPlayer.player.once('error', (err) => {
+							if (guildPlayer.sub) {
+								console.log('有訂閱執行取消')
+								setTimeout(() => {
+									guildPlayer.sub.unsubscribe()
+								}, 1);
+							}
+							console.error(err)
+							if (retry < 3) {
+								console.warn('自動執行retry, 自動執行retry')
+								retry++;
+								guildPlayer.resource = createAudioResource(guildPlayer.stream);
+								listenErr(guildPlayer);
+								tryPlay(guildPlayer);
+							} else {
+								console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
+							}
+						})
+						
+						guildPlayer.player.once(AudioPlayerStatus.Playing, () => {
+							retry = 0
+							guildsPlayer.push(guildPlayer);
+							callback(guildsPlayer);
+						})
+	
+						guildPlayer.player.once(AudioPlayerStatus.Idle, () => {
+							try {
+								setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
+								if (guildPlayer.connection) guildPlayer.connection.destroy();
+								const playerIndex = guildsPlayer.findIndex(player => {
+									return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+								})
+								if (playerIndex !== -1) {
+									guildsPlayer.splice(playerIndex, 1)
+									callback(guildsPlayer);
+								}
+								// guildPlayer.connection.destroy();
+							} catch (err) {
+								console.log('idle event err trigger:::');
+								console.log(err);
+							}
+						})
+					}
 					const guildPlayer = {
 						guildId: message.guild.id,
 						channelId: voiceChannel.id,
@@ -153,47 +197,7 @@ module.exports = {
 					guildPlayer.player = createAudioPlayer();
 					
 					let retry = 0;
-					guildPlayer.player.once('error', (err) => {
-						if (guildPlayer.sub) {
-							console.log('有訂閱執行取消')
-							setTimeout(() => {
-								guildPlayer.sub.unsubscribe()
-							}, 1);
-						}
-						console.error(err)
-						if (retry < 3) {
-							console.warn('自動執行retry, 自動執行retry')
-							retry++;
-							tryPlay(guildPlayer)
-						} else {
-							console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
-						}
-					})
-					
-					guildPlayer.player.once(AudioPlayerStatus.Playing, () => {
-						retry = 0
-						guildsPlayer.push(guildPlayer);
-						callback(guildsPlayer);
-					})
-
-					guildPlayer.player.once(AudioPlayerStatus.Idle, () => {
-						try {
-							setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
-							if (guildPlayer.connection) guildPlayer.connection.destroy();
-							const playerIndex = guildsPlayer.findIndex(player => {
-								return player.guildId === message.guild.id && player.channelId === voiceChannel.id
-							})
-							if (playerIndex !== -1) {
-								guildsPlayer.splice(playerIndex, 1)
-								callback(guildsPlayer);
-							}
-							// guildPlayer.connection.destroy();
-						} catch (err) {
-							console.log('idle event err trigger:::');
-							console.log(err);
-						}
-					})
-					
+					listenErr(guildPlayer);
 					tryPlay(guildPlayer);
 					//
 				} catch (err) {
