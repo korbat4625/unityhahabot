@@ -153,26 +153,20 @@ module.exports = {
 					guildPlayer.player = createAudioPlayer();
 					
 					let retry = 0;
-					guildPlayer.player.once('error', () => {
-						const thisPlayer = guildsPlayer.find(player => {
-							return player.guildId === message.guild.id && player.channelId === voiceChannel.id
-						});
-						if (thisPlayer) {
-							if (thisPlayer.sub) {
-								console.log('有訂閱執行取消')
-								setTimeout(() => {
-									thisPlayer.sub.unsubscribe()
-									if (playerIndex !== -1) {
-										guildsPlayer.splice(playerIndex, 1)
-										callback(guildsPlayer)
-									}
-								}, 1);
-							}
+					guildPlayer.player.once('error', (err) => {
+						if (guildPlayer.sub) {
+							console.log('有訂閱執行取消')
+							setTimeout(() => {
+								guildPlayer.sub.unsubscribe()
+							}, 1);
+						}
+						console.error(err)
+						if (retry < 3) {
+							console.warn('自動執行retry, 自動執行retry')
+							retry++;
+							tryPlay(guildPlayer)
 						} else {
-							if (retry < 3) {
-								retry++;
-								tryPlay(guildPlayer)
-							}
+							console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
 						}
 					})
 					
