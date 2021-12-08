@@ -21,6 +21,7 @@ module.exports = {
 		console.log('是否是機器人:::', message.author.bot, '\n\n');
 		if (message.author.bot) {
 			console.log('這是機器人觸發訊息!!!');
+			if (message.content.split(' ')[0] === '$$play')
 			return '';
 		}
 
@@ -115,13 +116,10 @@ module.exports = {
 			}
 			case 'play': {
 				try {
-					// const stream = ytdl(queryValue, { 
-					// 	filter: 'audioonly',
-					// 	quality: 'highestaudio',
-					// 	highWaterMark: 1 << 25
-					// });
-			
-					// const resource = createAudioResource(stream);
+					const tryPlay = function (guildPlayer) {
+						guildPlayer.player.play(guildPlayer.resource);
+						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
+					}
 					const guildPlayer = {
 						guildId: message.guild.id,
 						channelId: voiceChannel.id,
@@ -153,20 +151,36 @@ module.exports = {
 						adapterCreator: message.guild.voiceAdapterCreator
 					});
 					guildPlayer.player = createAudioPlayer();
-					guildPlayer.player.play(guildPlayer.resource);
-					guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
-
-					// 這段要查是不是有stream的error可以利用
-					// const funcao = stream.listeners('error')[2];
-					// stream.removeListener('error', funcao);
-					// stream.on('error', (err) => {
-					// 	try {
-					// 		throw new Error();
-					// 	} catch {
-					// 		stream.destroy();
-					// 		console.log(err);
-					// 	}
-					// });
+					
+					let retry = 0;
+					guildPlayer.player.once('error', () => {
+						const thisPlayer = guildsPlayer.find(player => {
+							return player.guildId === message.guild.id && player.channelId === voiceChannel.id
+						});
+						if (thisPlayer) {
+							if (thisPlayer.sub) {
+								console.log('有訂閱執行取消')
+								setTimeout(() => {
+									thisPlayer.sub.unsubscribe()
+									if (playerIndex !== -1) {
+										guildsPlayer.splice(playerIndex, 1)
+										callback(guildsPlayer)
+									}
+								}, 1);
+							}
+						} else {
+							if (retry < 3) {
+								retry++;
+								tryPlay(guildPlayer)
+							}
+						}
+					})
+					
+					guildPlayer.player.once(AudioPlayerStatus.Playing, () => {
+						retry = 0
+						guildsPlayer.push(guildPlayer);
+						callback(guildsPlayer);
+					})
 
 					guildPlayer.player.once(AudioPlayerStatus.Idle, () => {
 						try {
@@ -186,8 +200,7 @@ module.exports = {
 						}
 					})
 					
-					guildsPlayer.push(guildPlayer);
-					callback(guildsPlayer);
+					tryPlay(guildPlayer);
 					//
 				} catch (err) {
 					// 新版本
