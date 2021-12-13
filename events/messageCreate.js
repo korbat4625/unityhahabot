@@ -118,18 +118,11 @@ module.exports = {
 				try {
 					const listenErr = function (guildPlayer) {
 						guildPlayer.player.once('error', (err) => {
-							if (guildPlayer.sub) {
-								console.log('有訂閱執行取消')
-								setTimeout(() => {
-									guildPlayer.sub.unsubscribe()
-								}, 1);
-							}
 							console.error(err)
 							if (retry < 3) {
 								console.warn('自動執行retry, 自動執行retry')
 								retry++;
 								guildPlayer.resource = createAudioResource(guildPlayer.stream);
-								listenErr(guildPlayer);
 								tryPlay(guildPlayer);
 							} else {
 								console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
