@@ -116,6 +116,7 @@ module.exports = {
 			}
 			case 'play': {
 				try {
+					let retry = 0;
 					const listenErr = function (guildPlayer) {
 						guildPlayer.player.once('error', (err) => {
 							console.error(err)
