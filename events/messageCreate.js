@@ -149,7 +149,7 @@ module.exports = {
 						guildPlayer.player = createAudioPlayer();
 						
 						guildPlayer.player.once('error', (err) => {
-							console.log(err.toJSON())
+							// console.log(err.toJSON())
 							// if (retry < 3) {
 							// 	console.warn('自動執行retry, 自動執行retry')
 							// 	retry++;
