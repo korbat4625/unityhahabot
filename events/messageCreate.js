@@ -116,10 +116,6 @@ module.exports = {
 			}
 			case 'play': {
 				try {
-					const tryPlay = function (guildPlayer) {
-						guildPlayer.player.play(guildPlayer.resource);
-						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
-					}
 					const listenErr = function (guildPlayer) {
 						guildPlayer.player.once('error', (err) => {
 							if (guildPlayer.sub) {
@@ -164,6 +160,33 @@ module.exports = {
 							}
 						})
 					}
+					const tryPlay = function (guildPlayer) {
+						const prevTaskIndex
+							= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId);
+						if (prevTaskIndex >= 0) {
+							console.log('連續撥放，找到有prev，先消除prev');
+							guildsPlayer[prevTaskIndex].sub.unsubscribe();
+							guildsPlayer[prevTaskIndex].player.stop();
+							guildsPlayer.splice(prevTaskIndex, 1);
+						}
+	
+						guildPlayer.stream = ytdl(queryValue, { 
+							filter: 'audioonly',
+							quality: 'highestaudio',
+							highWaterMark: 1 << 25
+						}); 
+						guildPlayer.resource = createAudioResource(guildPlayer.stream);
+						guildPlayer.connection = joinVoiceChannel({
+							channelId: voiceChannel.id,
+							guildId: message.guild.id,
+							adapterCreator: message.guild.voiceAdapterCreator
+						});
+						guildPlayer.player = createAudioPlayer();
+						listenErr(guildPlayer);
+						guildPlayer.player.play(guildPlayer.resource);
+						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
+					}
+					
 					const guildPlayer = {
 						guildId: message.guild.id,
 						channelId: voiceChannel.id,
@@ -173,31 +196,6 @@ module.exports = {
 						player: null,
 						sub: null
 					};
-
-					const prevTaskIndex
-						= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId);
-					if (prevTaskIndex >= 0) {
-						console.log('連續撥放，找到有prev，先消除prev');
-						guildsPlayer[prevTaskIndex].sub.unsubscribe();
-						guildsPlayer[prevTaskIndex].player.stop();
-						guildsPlayer.splice(prevTaskIndex, 1);
-					}
-
-					guildPlayer.stream = ytdl(queryValue, { 
-						filter: 'audioonly',
-						quality: 'highestaudio',
-						highWaterMark: 1 << 25
-					}); 
-					guildPlayer.resource = createAudioResource(guildPlayer.stream);
-					guildPlayer.connection = joinVoiceChannel({
-						channelId: voiceChannel.id,
-						guildId: message.guild.id,
-						adapterCreator: message.guild.voiceAdapterCreator
-					});
-					guildPlayer.player = createAudioPlayer();
-					
-					let retry = 0;
-					listenErr(guildPlayer);
 					tryPlay(guildPlayer);
 					//
 				} catch (err) {
