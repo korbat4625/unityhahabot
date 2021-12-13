@@ -117,14 +117,43 @@ module.exports = {
 			case 'play': {
 				try {
 					let retry = 0;
-					const listenErr = function (guildPlayer) {
+					 const tryPlay = async function () {
+						const guildPlayer = {
+							guildId: message.guild.id,
+							channelId: voiceChannel.id,
+							stream: null,
+							resource: null,
+							connection: null,
+							player: null,
+							sub: null
+						};
+						const prevTaskIndex
+							= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId);
+						if (prevTaskIndex >= 0) {
+							console.log('連續撥放，找到有prev，先消除prev');
+							guildsPlayer[prevTaskIndex].sub.unsubscribe();
+							guildsPlayer[prevTaskIndex].player.stop();
+							guildsPlayer.splice(prevTaskIndex, 1);
+						}
+	
+						guildPlayer.stream = await ytdl(queryValue, { 
+							filter: 'audioonly',
+							quality: 'highestaudio'
+						}); 
+						guildPlayer.resource = createAudioResource(guildPlayer.stream);
+						guildPlayer.connection = joinVoiceChannel({
+							channelId: voiceChannel.id,
+							guildId: message.guild.id,
+							adapterCreator: message.guild.voiceAdapterCreator
+						});
+						guildPlayer.player = createAudioPlayer();
+						
 						guildPlayer.player.once('error', (err) => {
 							console.error(err)
 							if (retry < 3) {
 								console.warn('自動執行retry, 自動執行retry')
 								retry++;
-								guildPlayer.resource = createAudioResource(guildPlayer.stream);
-								tryPlay(guildPlayer);
+								tryPlay();
 							} else {
 								console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
 							}
@@ -153,44 +182,13 @@ module.exports = {
 								console.log(err);
 							}
 						})
-					}
-					 const tryPlay = async function (guildPlayer) {
-						const prevTaskIndex
-							= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId);
-						if (prevTaskIndex >= 0) {
-							console.log('連續撥放，找到有prev，先消除prev');
-							guildsPlayer[prevTaskIndex].sub.unsubscribe();
-							guildsPlayer[prevTaskIndex].player.stop();
-							guildsPlayer.splice(prevTaskIndex, 1);
-						}
-	
-						guildPlayer.stream = await ytdl(queryValue, { 
-							filter: 'audioonly',
-							quality: 'highestaudio',
-							highWaterMark: 26214400
-						}); 
-						guildPlayer.resource = createAudioResource(guildPlayer.stream);
-						guildPlayer.connection = joinVoiceChannel({
-							channelId: voiceChannel.id,
-							guildId: message.guild.id,
-							adapterCreator: message.guild.voiceAdapterCreator
-						});
-						guildPlayer.player = createAudioPlayer();
-						listenErr(guildPlayer);
+
 						guildPlayer.player.play(guildPlayer.resource);
 						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
 					}
 					
-					const guildPlayer = {
-						guildId: message.guild.id,
-						channelId: voiceChannel.id,
-						stream: null,
-						resource: null,
-						connection: null,
-						player: null,
-						sub: null
-					};
-					tryPlay(guildPlayer);
+					
+					tryPlay();
 					//
 
 					// const {
