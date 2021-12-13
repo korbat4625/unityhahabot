@@ -185,9 +185,10 @@ module.exports = {
 							}
 						})
 
-						setTimeout(() => {
+						var s = setTimeout(() => {
 							guildPlayer.player.play(guildPlayer.resource);
 							guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
+							clearTimeout(s);
 						}, 500)
 					}
 					
