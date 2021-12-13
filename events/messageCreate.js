@@ -169,8 +169,9 @@ module.exports = {
 	
 						guildPlayer.player.once(AudioPlayerStatus.Idle, () => {
 							try {
+								retry = 0;
 								setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
-								if (guildPlayer.connection) guildPlayer.connection.destroy();
+								// if (guildPlayer.connection) guildPlayer.connection.destroy();
 								const playerIndex = guildsPlayer.findIndex(player => {
 									return player.guildId === message.guild.id && player.channelId === voiceChannel.id
 								})
@@ -185,10 +186,9 @@ module.exports = {
 							}
 						})
 
-						var s = setTimeout(() => {
+						setTimeout(() => {
 							guildPlayer.player.play(guildPlayer.resource);
 							guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
-							clearTimeout(s);
 						}, 500)
 					}
 					
