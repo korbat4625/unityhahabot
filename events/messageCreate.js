@@ -117,7 +117,7 @@ module.exports = {
 			case 'play': {
 				try {
 					let retry = 0;
-					 const tryPlay = async function () {
+					const tryPlay = async function () {
 						const guildPlayer = {
 							guildId: message.guild.id,
 							channelId: voiceChannel.id,
@@ -137,8 +137,7 @@ module.exports = {
 						}
 	
 						guildPlayer.stream = await ytdl(queryValue, { 
-							filter: 'audioonly',
-							quality: 'highestaudio'
+							filter: 'audioonly'
 						}); 
 						guildPlayer.resource = createAudioResource(guildPlayer.stream);
 						guildPlayer.connection = joinVoiceChannel({
@@ -155,7 +154,9 @@ module.exports = {
 								retry++;
 								tryPlay();
 							} else {
+								retry = 0;
 								console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
+								return message.reply('請再重試一次...')
 							}
 						})
 						
