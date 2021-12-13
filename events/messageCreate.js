@@ -138,7 +138,7 @@ module.exports = {
 	
 						guildPlayer.stream = await ytdl(queryValue, { 
 							filter: 'audioonly',
-							highWaterMark: 1 << 25
+							highWaterMark: 1
 						}); 
 						guildPlayer.resource = createAudioResource(guildPlayer.stream);
 						guildPlayer.connection = joinVoiceChannel({
