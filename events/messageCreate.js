@@ -203,8 +203,8 @@ module.exports = {
 
 					const connection = joinVoiceChannel({
 						channelId: voiceChannel.id,
-						guildId: guild.id,
-						adapterCreator: guild.voiceAdapterCreator,
+						guildId: message.guild.id,
+						adapterCreator: message.guild.voiceAdapterCreator,
 					});
 
 					let retry = 0;
