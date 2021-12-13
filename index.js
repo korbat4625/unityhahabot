@@ -12,9 +12,6 @@ const register = require('./deploy-command');
 // discord.js
 const { Client, Collection, Intents } = require('discord.js');
 
-const libsodium = require("libsodium-wrappers");
-const ffmpeg = require("ffmpeg-static");
-
 let bigClient = null;
 const token = process.env.HAHA_TOKEN;
 const clientId = process.env.CLIENT_ID;
@@ -130,6 +127,7 @@ const startRobot = async (restart) => {
 	})
 
 	// Login to Discord with your client's token
+	console.log('開始嘗試登入')
 	await client.login(token);
 	bigClient = client;
 	// console.log(client.guilds.cache)

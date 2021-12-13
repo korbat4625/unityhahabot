@@ -138,7 +138,7 @@ module.exports = {
 	
 						guildPlayer.stream = await ytdl(queryValue, { 
 							filter: 'audioonly',
-							highWaterMark: 1
+							quality: 'highestaudio'
 						}); 
 						guildPlayer.resource = createAudioResource(guildPlayer.stream);
 						guildPlayer.connection = joinVoiceChannel({
@@ -185,11 +185,10 @@ module.exports = {
 							}
 						})
 
-						setTimeout(() => {
-							guildPlayer.player.play(guildPlayer.resource);
-							guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
-						}, 500)
+						guildPlayer.player.play(guildPlayer.resource);
+						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
 					}
+					
 					
 					tryPlay();
 					//
