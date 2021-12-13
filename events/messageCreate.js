@@ -136,7 +136,7 @@ module.exports = {
 							guildsPlayer.splice(prevTaskIndex, 1);
 						}
 	
-						guildPlayer.stream = ytdl(queryValue, { 
+						guildPlayer.stream = await ytdl(queryValue, { 
 							filter: 'audioonly',
 							highWaterMark: 1 << 25
 						}); 
