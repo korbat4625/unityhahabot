@@ -149,16 +149,17 @@ module.exports = {
 						guildPlayer.player = createAudioPlayer();
 						
 						guildPlayer.player.once('error', (err) => {
-							console.error(err)
-							if (retry < 3) {
-								console.warn('自動執行retry, 自動執行retry')
-								retry++;
-								tryPlay();
-							} else {
-								retry = 0;
-								console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
-								return message.reply('請再重試一次...')
-							}
+							console.log(err.toJSON())
+							// if (retry < 3) {
+							// 	console.warn('自動執行retry, 自動執行retry')
+							// 	retry++;
+							// 	tryPlay();
+							// } else {
+							// 	retry = 0;
+							// 	console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
+							// 	return message.reply('請再重試一次...')
+							// }
+							return message.reply('發生未知錯誤，請再重試一次指令...')
 						})
 						
 						guildPlayer.player.once(AudioPlayerStatus.Playing, () => {
@@ -171,7 +172,7 @@ module.exports = {
 							try {
 								retry = 0;
 								setTimeout(() => guildPlayer.sub.unsubscribe(), 1);
-								// if (guildPlayer.connection) guildPlayer.connection.destroy();
+								if (guildPlayer.connection) guildPlayer.connection.destroy();
 								const playerIndex = guildsPlayer.findIndex(player => {
 									return player.guildId === message.guild.id && player.channelId === voiceChannel.id
 								})
