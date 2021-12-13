@@ -136,8 +136,9 @@ module.exports = {
 							guildsPlayer.splice(prevTaskIndex, 1);
 						}
 	
-						guildPlayer.stream = await ytdl(queryValue, { 
-							filter: 'audioonly'
+						guildPlayer.stream = ytdl(queryValue, { 
+							filter: 'audioonly',
+							highWaterMark: 1 << 25
 						}); 
 						guildPlayer.resource = createAudioResource(guildPlayer.stream);
 						guildPlayer.connection = joinVoiceChannel({
@@ -184,10 +185,11 @@ module.exports = {
 							}
 						})
 
-						guildPlayer.player.play(guildPlayer.resource);
-						guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
+						setTimeout(() => {
+							guildPlayer.player.play(guildPlayer.resource);
+							guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
+						}, 500)
 					}
-					
 					
 					tryPlay();
 					//
