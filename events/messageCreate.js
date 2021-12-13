@@ -153,7 +153,7 @@ module.exports = {
 							}
 						})
 					}
-					const tryPlay = function (guildPlayer) {
+					const tryPlay = async function (guildPlayer) {
 						const prevTaskIndex
 							= guildsPlayer.findIndex(currentGuildPlayer => guildPlayer.channelId === currentGuildPlayer.channelId);
 						if (prevTaskIndex >= 0) {
@@ -163,10 +163,10 @@ module.exports = {
 							guildsPlayer.splice(prevTaskIndex, 1);
 						}
 	
-						guildPlayer.stream = ytdl(queryValue, { 
+						guildPlayer.stream = await ytdl(queryValue, { 
 							filter: 'audioonly',
 							quality: 'highestaudio',
-							highWaterMark: 1 << 25
+							highWaterMark: 26214400
 						}); 
 						guildPlayer.resource = createAudioResource(guildPlayer.stream);
 						guildPlayer.connection = joinVoiceChannel({
