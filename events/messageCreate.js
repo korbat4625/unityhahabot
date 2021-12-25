@@ -159,6 +159,7 @@ module.exports = {
 							// 	console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
 							// 	return message.reply('請再重試一次...')
 							// }
+							console.log(err)
 							return message.reply('發生未知錯誤，請再重試一次指令...')
 						})
 						
