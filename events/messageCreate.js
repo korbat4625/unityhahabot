@@ -1,4 +1,5 @@
 const ytSearch = require('yt-search');
+const ytdlExec = require('youtube-dl-exec').raw;
 const ytdl = require('ytdl-core');
 const {
 	AudioPlayerStatus,
@@ -6,7 +7,9 @@ const {
 	createAudioPlayer,
 	createAudioResource,
 	joinVoiceChannel,
-	getVoiceConnection
+	getVoiceConnection,
+	entersState,
+	VoiceConnectionStatus
 } = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
 const guildsPlayer = [];
@@ -135,12 +138,17 @@ module.exports = {
 							guildsPlayer[prevTaskIndex].player.stop();
 							guildsPlayer.splice(prevTaskIndex, 1);
 						}
-	
-						guildPlayer.stream = await ytdl(queryValue, { 
-							filter: 'audioonly',
-							highWaterMark: 1
-						}); 
-						guildPlayer.resource = createAudioResource(guildPlayer.stream);
+						guildPlayer.stream = ytdlExec(queryValue, {
+							o: '-',
+							q: '',
+							f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
+							r: '100K',
+						  })
+						// guildPlayer.stream = await ytdl(queryValue, { 
+						// 	filter: 'audioonly',
+						// 	highWaterMark: 1
+						// }); 
+						guildPlayer.resource = createAudioResource(guildPlayer.stream.stdout);
 						guildPlayer.connection = joinVoiceChannel({
 							channelId: voiceChannel.id,
 							guildId: message.guild.id,
@@ -159,7 +167,7 @@ module.exports = {
 							// 	console.log('自動嘗試次數已滿，還是無法撥放!!!!!!')
 							// 	return message.reply('請再重試一次...')
 							// }
-							console.log(err)
+							console.log('err:::::', err)
 							return message.reply('發生未知錯誤，請再重試一次指令...')
 						})
 						
@@ -188,10 +196,14 @@ module.exports = {
 							}
 						})
 
-						setTimeout(() => {
-							guildPlayer.player.play(guildPlayer.resource);
+						guildPlayer.player.play(guildPlayer.resource);
+						try {
+							await entersState(guildPlayer.connection, VoiceConnectionStatus.Ready, 30_000);
 							guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
-						}, 500)
+						} catch (error) {
+							guildPlayer.connection.destroy();
+							throw error;
+						}
 					}
 					
 					tryPlay();
