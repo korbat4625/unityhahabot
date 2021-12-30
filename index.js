@@ -20,7 +20,7 @@ let bigClient = null;
 let guildsId = [];
 let clientRecord = []
 clientRecord[clientId] = {
-	true: false
+	login: false
 }
 
 // express
