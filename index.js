@@ -13,9 +13,10 @@ const register = require('./deploy-command');
 const { Client, Collection, Intents } = require('discord.js');
 
 let bigClient = null;
+let guildsId = [];
+let clientRecord = []
 const token = process.env.HAHA_TOKEN;
 const clientId = process.env.CLIENT_ID;
-let guildsId = [];
 const eventsNameArr = [];
 
 // express
@@ -79,6 +80,12 @@ const startRobot = async (restart) => {
 						client.guildsId = guildsId;
 						console.log('登入後的ID們');
 						console.log('clientId:::', needToRegisteredInfo.clientId, ', guildsId:::',  guildsId);
+						if (clientId === needToRegisteredInfo.clientId) {
+							clientRecord[clientId] = {
+								login: true
+							}
+						}
+						
 					});
 				});
 				eventsNameArr.push(event.name);
@@ -127,11 +134,15 @@ const startRobot = async (restart) => {
 	})
 
 	// Login to Discord with your client's token
-	console.log('開始嘗試登入')
-	await client.login(token).then(response => {
-		console.log('response:', response)
-	});
-	bigClient = client;
+	if (!clientRecord[clientId].login) {
+		console.log('開始嘗試登入')
+		await client.login(token).then(response => {
+			console.log('response:', response)
+		});
+		bigClient = client;
+	} else {
+		console.log('已登入.不須再登入')
+	}
 	// console.log(client.guilds.cache)
 }
 
@@ -224,7 +235,7 @@ try {
 //   })
 
 let count = 1;
-const task = nodeCron.schedule('0 */5 * * * *', () => {
+const task = nodeCron.schedule('0 */10 * * * *', () => {
 	console.log('查看events arr', eventsNameArr);
 	if (count % 2 === 0) {
 		if (playlistTasks.length !== 0) {
