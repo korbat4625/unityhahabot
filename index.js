@@ -128,7 +128,9 @@ const startRobot = async (restart) => {
 
 	// Login to Discord with your client's token
 	console.log('開始嘗試登入')
-	await client.login(token);
+	await client.login(token).then(response => {
+		console.log('response:', response)
+	});
 	bigClient = client;
 	// console.log(client.guilds.cache)
 }
