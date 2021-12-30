@@ -12,12 +12,16 @@ const register = require('./deploy-command');
 // discord.js
 const { Client, Collection, Intents } = require('discord.js');
 
-let bigClient = null;
-let guildsId = [];
-let clientRecord = []
+
 const token = process.env.HAHA_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const eventsNameArr = [];
+let bigClient = null;
+let guildsId = [];
+let clientRecord = []
+clientRecord[clientId] = {
+	true: false
+}
 
 // express
 const express = require('express');
