@@ -241,17 +241,6 @@ try {
 let count = 1;
 const task = nodeCron.schedule('0 */10 * * * *', () => {
 	console.log('查看events arr', eventsNameArr);
-	if (count % 2 === 0) {
-		if (playlistTasks.length !== 0) {
-			console.log('偵測到還有播放任務，因此不重啟');
-			count++;
-		} else {
-			console.log('10分鐘強制重啟');
-			startRobot(false);
-			count = 0;
-		}
-		return '';
-	}
 	if (playlistTasks.length !== 0) {
 		console.log('偵測到還有播放任務，因此不重啟');
 		count++;
