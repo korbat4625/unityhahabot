@@ -1,6 +1,6 @@
 const ytSearch = require('yt-search');
 const ytdlExec = require('youtube-dl-exec').raw;
-const ytdl = require('ytdl-core');
+// const ytdl = require('ytdl-core');
 const {
 	AudioPlayerStatus,
 	StreamType,
@@ -201,6 +201,7 @@ module.exports = {
 							await entersState(guildPlayer.connection, VoiceConnectionStatus.Ready, 30_000);
 							guildPlayer.sub = guildPlayer.connection.subscribe(guildPlayer.player);
 						} catch (error) {
+							console.log('嘗試撥放時發生錯誤', error)
 							guildPlayer.connection.destroy();
 							throw error;
 						}
@@ -255,7 +256,7 @@ module.exports = {
 						callback(guildsPlayer);
 					}
 					//
-					console.error('嘗試撥放過程發生錯誤:', err);
+					console.error('嘗試撥放過程發生錯誤catch outside:', err);
 				}
 				return ''
 			}
