@@ -361,7 +361,7 @@ module.exports = {
 			}
 			case 'secret': {
 				for(let i = 0; i< secretTime; i++) {
-					message.reply('天底下最強的人就是台南市長黃偉哲...')
+					message.reply('天底下最強的人是台南市長黃偉哲...')
 				}
 				return;
 			}
